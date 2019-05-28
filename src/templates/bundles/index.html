@@ -1,0 +1,30 @@
+{% extends '_layouts/elementindex' %}
+
+{% set title = 'Bundles' | t('bundles') %}
+{% set docTitle = title %}
+{% set elementType = 'kuriousagency\\commerce\\bundles\\elements\\Bundle' %}
+{% set selectedSubnavItem = 'bundles' %}
+
+{% js %}
+    if (typeof Craft.Bundles === 'undefined') {
+        Craft.Bundles = {};
+    }
+
+    {% set bundleTypes = [] %}
+
+    {% for bundleType in craft.bundles.bundleTypes.getEditableBundleTypes() %}
+        {% set bundleTypes = bundleTypes | merge([{
+            id: bundleType.id,
+            name: bundleType.name,
+            handle: bundleType.handle,
+        }]) %}
+    {% endfor %}
+
+    Craft.Bundles.editableBundleTypes = {{ bundleTypes | json_encode | raw }};
+
+    {% if bundleTypeHandle is defined %}
+        window.defaultBundleTypeHandle = '{{ bundleTypeHandle }}';
+    {% endif %}
+{% endjs %}
+
+{% do view.registerAssetBundle("kuriousagency\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}

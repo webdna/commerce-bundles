@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+
+<defs>
+	<linearGradient x1="24.5820312%" y1="7.52734375%" x2="66.4335938%" y2="100%" id="ka-gradient-green">
+		<stop stop-color="#f2dc34" offset="0%"></stop>
+		<stop stop-color="#7eba46" offset="100%"></stop>
+	</linearGradient>
+	<linearGradient x1="24.5820312%" y1="7.52734375%" x2="66.4335938%" y2="100%" id="ka-gradient-purple">
+		<stop stop-color="#582b7b" offset="0%"></stop>
+		<stop stop-color="#009AD7" offset="100%"></stop>
+	</linearGradient>
+</defs>
+ 
+<g transform="translate(2.4, 7)" fill="url(#ka-gradient-green)" stroke="url(#ka-gradient-green)" stroke-width="3">
+	<path d="M64.2319142,0 L30.7673781,0 C25.7538222,0 21.1200812,2.67484601 18.6133033,7.01802871 L1.88056046,35.9988506 C-0.627167019,40.3410837 -0.627167019,45.6917253 1.88056046,50.0339584 L18.6133033,79.0157298 C21.1200812,83.357963 25.7538222,86.0318595 30.7673781,86.0318595 L64.2319142,86.0318595 C69.2464196,86.0318595 73.8792111,83.357963 76.3869386,79.0157298 L93.1196814,50.0339584 C95.6264593,45.6917253 95.6264593,40.3410837 93.1196814,35.9988506 L76.3869386,7.01802871 C73.8792111,2.67484601 69.2464196,0 64.2319142,0"></path>
+</g>
+
+<!-- EDIT -->
+<text x="50%" y="53%" fill="white" font-size="45" font-family="sans-serif" font-weight="lighter" text-anchor="middle" alignment-baseline="middle" style="letter-spacing:-2; text-transform: uppercase; user-select:none;">CB</text>
+
+</svg>

@@ -1,0 +1,24 @@
+/**
+ * Bundles plugin for Craft CMS
+ *
+ * Bundles CSS
+ *
+ * @author    Kurious Agency
+ * @copyright Copyright (c) 2019 Kurious Agency
+ * @link      https://kurious.agency
+ * @package   Bundles
+ * @since     1.0.0
+ */
+
+
+ #productPicker .label {
+	width: 200px;
+	margin: 0;
+ }
+
+ #productPicker .qty {
+	 margin: 0;
+	 margin-right: 20px !important;
+	 margin-left: 10px;
+	 width: 100px;
+ }

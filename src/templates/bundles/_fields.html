@@ -1,0 +1,99 @@
+{% macro titleField(bundle) %}
+	{%- import '_includes/forms' as forms -%}
+
+	{{ forms.textField({
+		label: 'Title' | t('bundles'),
+		site: bundle.site,
+		id: 'title',
+		name: 'title',
+		value: bundle.title,
+		placeholder: 'Enter title' | t('bundles'),
+		errors: bundle.getErrors('title'),
+		first: true,
+		autofocus: true,
+		required: true,
+		maxlength: 255
+	}) }}
+{% endmacro %}
+
+{% macro generalMetaFields(bundle) %}
+    {%- import '_includes/forms' as forms -%}
+        
+    {{ forms.textField({
+        label: 'Slug' | t('bundles'),
+        id: 'slug',
+        name: 'slug',
+        value: bundle.slug,
+        placeholder: 'Enter slug' | t('bundles'),
+        errors: bundle.getErrors('slug') | merge(bundle.getErrors('uri'))
+    }) }}
+
+    {{ forms.dateTimeField({
+        label: 'Post Date' | t('bundles'),
+        id: 'postDate',
+        name: 'postDate',
+        value: bundle.postDate,
+        errors: bundle.getErrors('postDate')
+    }) }}
+
+    {{ forms.dateTimeField({
+        label: 'Expiry Date' | t('bundles'),
+        id: 'expiryDate',
+        name: 'expiryDate',
+        value: bundle.expiryDate,
+        errors: bundle.getErrors('expiryDate')
+    }) }}
+{% endmacro %}
+
+{% macro behavioralMetaFields(bundle) %}
+    {%- import '_includes/forms' as forms -%}
+
+    {{ forms.selectField({
+        label: 'Tax Category' | t('bundles'),
+        name: 'taxCategoryId',
+        value: bundle.taxCategoryId,
+        required: true,
+        options: craft.commerce.taxCategories.getAllTaxCategoriesAsList()
+    }) }}
+
+    {% set shippingCategories = [] %}
+    {% for shippingCategory in craft.commerce.shippingCategories.getAllShippingCategories() %}
+        {% set shippingCategories = shippingCategories|merge([{ value: shippingCategory.id, label: shippingCategory.name }]) %}
+    {% endfor %}
+
+    {{ forms.selectField({
+        label: 'Shipping Category' | t('bundles'),
+        name: 'shippingCategoryId',
+        value: bundle.shippingCategoryId,
+        required: true,
+        options: shippingCategories
+    }) }}
+{% endmacro %}
+
+{% macro generalFields(bundle) %}
+    {%- import '_includes/forms' as forms -%}
+
+    {{ forms.textField({
+        id: 'sku',
+        label: 'SKU' | t('bundles'),
+        required: true,
+        name: 'sku',
+        value: bundle.sku,
+        class: 'code',
+        placeholder: 'Enter SKU' | t('bundles'),
+        errors: bundle.getErrors('sku')
+    }) }}
+
+    {{ forms.textField({
+        id: 'price',
+        label: 'Price' | t('bundles'),
+		required: true,
+        name: 'price',
+        value: (bundle.price == '0' ? '0' | number : (bundle.price ?  bundle.price | number ?: '')),
+        placeholder: 'Enter price' | t('bundles'),
+        unit: craft.commerce.paymentCurrencies.primaryPaymentCurrency.iso | upper,
+        errors: bundle.getErrors('price'),
+    }) }}
+	
+{% endmacro %}
+

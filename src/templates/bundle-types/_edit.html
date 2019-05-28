@@ -1,0 +1,158 @@
+{% extends 'commerce-bundles/_layouts' %}
+{% set selectedSubnavItem = 'bundleTypes' %}
+
+{% set crumbs = [
+    { label: 'Bundle' | t('bundle'), url: url('bundle') },
+    { label: 'Bundle Types' | t('bundle'), url: url('commerce-bundles/bundle-types') },
+] %}
+
+{% set fullPageForm = true %}
+
+{% set selectedTab = 'bundle-type-settings' %}
+{% import '_includes/forms' as forms %}
+
+{% block blockContent %}
+	<input type="hidden" name="action" value="commerce-bundles/bundle-types/save">
+	{{ redirectInput('commerce-bundles/bundle-types') }}
+	{% if bundleType.id %}<input type="hidden" name="bundleTypeId" value="{{ bundleType.id }}">{% endif %}
+
+	{{ forms.textField({
+		first: true,
+		label: 'Name' | t('bundle'),
+		instructions: 'What this bundle type will be called in the CP.' | t('bundle'),
+		id: 'name',
+		name: 'name',
+		value: bundleType.name,
+		errors: bundleType.getErrors('name'),
+		autofocus: true,
+		required: true,
+		translatable: true
+	}) }}
+
+	{{ forms.textField({
+		label: 'Handle' | t('bundle'),
+		instructions: 'How you’ll refer to this bundle type in the templates.' | t('bundle'),
+		id: 'handle',
+		class: 'code',
+		name: 'handle',
+		value: bundleType.handle,
+		errors: bundleType.getErrors('handle'),
+		required: true
+	}) }}
+
+	{{ forms.textField({
+		label: 'Automatic SKU Format' | t('bundle'),
+		instructions: 'What the unique auto-generated SKUs should look like, when a SKU field is submitted without a value. You can include tags that output properties, such as {ex1} or {ex2}' | t('bundle', { ex1: '<code>{slug}</code>', ex2: '<code>{myCustomField}</code>' }),
+		id: 'skuFormat',
+		class: 'ltr',
+		name: 'skuFormat',
+		value: bundleType.skuFormat,
+		errors: bundleType.getErrors('skuFormat')
+	}) }}
+
+	{% macro hasUrlsField(bundleType) %}
+		{% from '_includes/forms' import checkboxField %}
+
+		{{ checkboxField({
+			label: 'Bundles of this type have their own URLs' | t('bundle'),
+			id: 'hasUrls',
+			name: 'hasUrls',
+			checked: bundleType.hasUrls,
+			toggle: 'url-settings'
+		}) }}
+	{% endmacro %}
+
+	{% macro templateField(bundleType) %}
+		{% from "_includes/forms" import textField %}
+
+		{{ textField({
+			label: 'Bundle Template' | t('bundle'),
+			instructions: 'The template to use when a bundle’s URL is requested.' | t('bundle'),
+			id: 'template',
+			class: 'ltr',
+			name: 'template',
+			value: bundleType.template,
+			errors: bundleType.getErrors('template')
+		}) }}
+	{% endmacro %}
+
+	{% from _self import hasUrlsField, templateField %}
+
+    <hr>
+
+    {% set siteRows = [] %}
+    {% set siteErrors = bundleType.getErrors('siteSettings') %}
+
+    {% for site in craft.app.sites.getAllSites() %}
+        {% set siteSettings = bundleType.siteSettings[site.id] ?? null %}
+        
+        {% if siteSettings %}
+            {% for attribute, errors in siteSettings.getErrors() %}
+                {% set siteErrors = siteErrors | merge(errors) %}
+            {% endfor %}
+        {% endif %}
+
+        {% set siteRows = siteRows | merge({
+            (site.handle): {
+                heading: site.name | t('site'),
+                uriFormat: {
+                    value: siteSettings.uriFormat ?? null,
+                    hasErrors: siteSettings.hasErrors('uriFormat') ?? false
+                },
+                template: {
+                    value: siteSettings.template ?? null,
+                    hasErrors: siteSettings.hasErrors('template') ?? false,
+                }
+            }
+        }) %}
+    {% endfor %}
+
+    {{ forms.editableTableField({
+        label: 'Site Settings' | t('app'),
+        instructions: 'Configure the bundle types’s site-specific settings.' | t('app'),
+        id: 'sites',
+        name: 'sites',
+        cols: {
+            heading: {
+                type: 'heading',
+                heading: 'Site' | t('app'),
+                class: 'thin'
+            },
+            uriFormat: {
+                type: 'singleline',
+                heading: 'Bundle Type URI Format' | t('app'),
+                info: 'What bundle type URIs should look like for the site.' | t('app'),
+                placeholder: 'Leave blank if bundles don’t have URLs' | t('app'),
+                code: true
+            },
+            template: {
+                type: 'singleline',
+                heading: 'Template' | t('app'),
+                info: 'Which template should be loaded when an bundle’s URL is requested.' | t('app'),
+                code: true
+            },
+        },
+        rows: siteRows,
+        staticRows: true,
+        errors: siteErrors | unique
+    }) }}
+
+    <hr>
+
+    {% include '_includes/fieldlayoutdesigner' with {
+        fieldLayout: bundleType.getBundleFieldLayout(),
+    } only %}
+
+{% endblock %}
+
+{% if brandNewBundleType %}
+    {% js %}
+        new Craft.HandleGenerator('#name', '#handle');
+
+        {% for site in craft.app.sites.getAllSites() %}
+            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]', { suffix: '/{slug}' });
+            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[template]"]', { suffix: '/_bundle' });
+        {% endfor %}
+
+    {% endjs %}
+{% endif %}

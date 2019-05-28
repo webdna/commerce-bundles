@@ -1,0 +1,233 @@
+{% extends '_layouts/cp' %} 
+{% set selectedSubnavItem = 'bundles' %} 
+{% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ "commerceproducts commerceproductsedit bundlesedit" %}
+
+{% set crumbs = [ { label: 'Bundles' | t('bundles'), url: url('bundles') }, { label: bundleType.name | t('bundles'), url: url('bundles/bundles/' ~ bundleType.handle) }, ] %} 
+{% set fullPageForm = true %} 
+{% set saveShortcutRedirect = continueEditingUrl %} 
+{% set products = craft.products.id(410,413) %} 
+{% import '_includes/forms' as forms %} 
+{% import 'commerce-bundles/bundles/_fields' as bundleFields %} 
+
+{% block header %}
+{{ block('pageTitle') }}
+{{ block('contextMenu') }}
+<div class="flex-grow"></div>
+
+{% if showPreviewBtn or shareUrl is defined %} {% if showPreviewBtn %}
+<div class="btn livepreviewbtn">{{ 'Live Preview' | t('app') }}</div>
+{% endif %} {% if shareUrl is defined %}
+<a href="{{ shareUrl }}" class="btn sharebtn" target="_blank">{{ 'Share' | t('app') }}</a>
+{% endif %}
+
+<div class="flex-grow"></div>
+{% endif %}
+
+{{ block('actionButton') }}
+{% endblock %} {% block actionButton %}
+<div class="btngroup">
+	<input type="submit" class="btn submit" value="{{ 'Save' | t('bundles') }}" />
+	<div class="btn submit menubtn"></div>
+	<div class="menu">
+		<ul>
+			<li>
+				<a class="formsubmit" data-redirect="{{ continueEditingUrl | hash }}">
+					{{ 'Save and continue editing' | t('bundles') }}
+					{{ forms.optionShortcutLabel('S') }}
+				</a>
+			</li>
+
+			{% if bundle.id %}
+			<li>
+				<a class="formsubmit" data-param="bundleId" data-value="" data-redirect="{{ continueEditingUrl | hash }}">
+					{{ 'Save as a new bundle' | t('bundles') }}
+				</a>
+			</li>
+			{% endif %}
+		</ul>
+
+		{% if bundle.id %}
+		<hr />
+		<ul>
+			<li>
+				<a class="formsubmit error" data-action="commerce-bundles/bundles/delete" data-confirm="{{ 'Are you sure you want to delete this bundle?' | t('bundles') }}" data-redirect="{{ 'commerce-bundles/bundles' | hash }}">
+					{{ 'Delete' | t('bundles') }}
+				</a>
+			</li>
+		</ul>
+		{% endif %}
+	</div>
+</div>
+{% endblock %} {% block contextMenu %} {% if craft.app.getIsMultiSite() %}
+<div class="btn menubtn" data-icon="world">{{ bundle.site.name | t('site') }}</div>
+<div class="menu">
+	<ul class="padded">
+		{% for siteId in siteIds %} {% set site = craft.app.sites.getSiteById(siteId) %} {% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
+
+		<li>
+			{% if siteId == bundle.siteId %}
+			<a class="sel">
+				<div class="status {{ status }}"></div>
+				{{ site.name | t('site') }}
+			</a>
+			{% else %} {% set url = url('commerce-bundles/bundles/#{bundleTypeHandle}/#{craft.app.request.getSegment(4)}/#{site.handle}') %}
+
+			<a href="{{ url }}">
+				<div class="status {{ status }}"></div>
+				{{ site.name | t('site') }}
+			</a>
+			{% endif %}
+		</li>
+		{% endfor %}
+	</ul>
+</div>
+{% endif %} {% endblock %} {% block content %}
+<input type="hidden" name="action" value="commerce-bundles/bundles/save" />
+{{ redirectInput('commerce-bundles/bundles') }}
+<input type="hidden" name="typeId" value="{{ bundleType.id }}" />
+{% if bundle.id %}<input type="hidden" name="bundleId" value="{{ bundle.id }}" />{% endif %}
+
+<div id="fields">
+	{{ bundleFields.titleField(bundle) }}
+
+	<div class="field first" id="products-field">
+		<div class="heading">
+			<label id="products-label" class="required" for="products">Please select the products and quantities for this bundle</label>
+		</div>
+
+		<input type="hidden" name="products" value="" />
+
+		<div class="flex">
+			<div id="productPicker" class="elementselect">
+				<div class="elements">
+					{% for element in bundle.products %} {% include "_elements/element" with { context: 'field', size: 'small', name: 'products' } %} {% endfor %}
+				</div>
+				<div class="btn add icon dashed">Choose product</div>
+			</div>
+		</div>
+		{% if bundle.getErrors('products') %}
+			 <ul class="errors">
+				{% for error in bundle.getErrors('products') %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+		{% if bundle.getErrors('qtys') %}
+			 <ul class="errors">
+				{% for error in bundle.getErrors('qtys') %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+
+	</div>
+
+	<div>
+		{% for tab in bundleType.getFieldLayout().getTabs() %}
+		<div id="{{ tab.getHtmlId() }}" {% if not loop.first %} class="hidden" {% endif %}>
+			{% include '_includes/fields' with { fields: tab.getFields(), element: bundle, } only %}
+		</div>
+		{% endfor %}
+	</div>
+</div>
+
+{% if not bundle.slug %} {% js %} window.slugGenerator = new Craft.SlugGenerator('#title', '#slug'); {% endjs %} {% endif %} {% endblock %} {% block details %}
+<div class="meta">
+	{{ bundleFields.generalMetaFields(bundle) }}
+
+	{{ forms.lightswitchField({
+            label: 'Enabled' | t('bundles'),
+            id: 'enabled',
+            name: 'enabled',
+            on: bundle.enabled
+        }) }}
+
+	{% if craft.app.getIsMultiSite() %}
+	{{ forms.lightswitchField({
+                label: 'Enabled for site' | t('bundles'),
+                id: 'enabledForSite',
+                name: 'enabledForSite',
+                on: bundle.enabledForSite
+            }) }}
+	{% endif %}
+</div>
+
+<hr />
+
+<div class="meta">
+	{{ bundleFields.behavioralMetaFields(bundle) }}
+</div>
+
+<hr />
+
+<div class="meta">
+	{{ bundleFields.generalFields(bundle) }}
+	{% hook "cp.commerce.bundle.edit.price" %}
+</div>
+
+{% hook "cp.commerce.bundle.edit.meta" %}
+
+<hr />
+
+{% if bundle.id %}
+<hr />
+
+<div class="meta read-only">
+	<div class="data">
+		<h5 class="heading">{{ 'Date Created' | t('bundles') }}</h5>
+		<div class="value">{{ bundle.dateCreated | date('short') }} {{ bundle.dateCreated | time('short') }}</div>
+	</div>
+
+	<div class="data">
+		<h5 class="heading">{{ 'Date Updated' | t('bundles') }}</h5>
+		<div class="value">{{ bundle.dateUpdated | date('short') }} {{ bundle.dateUpdated | time('short') }}</div>
+	</div>
+</div>
+{% endif %} {% endblock %} 
+{% js %} 
+var $elements = $('#productPicker .element'), 
+	qty = { {% for key,qty in bundle.qtys %}
+				{% set value = qty > 0 ? qty : 1 %}
+				{{ key ~ ':' ~ value }}, 
+			{% endfor %} 
+		}; 
+	$elements.each(function(e) { 
+		var $this = $(this), 
+			id = $this.data('id'); 
+		var $div = $('<div class="flex"></div>').appendTo($this); 
+			$div.append($this.find('.status')); 
+			$div.append($this.find('.label')); 
+			$div.append('Qty:'); 
+			$div.append($('<input type="number" min="1" class="text qty" data-id="'+id+'" name="qty['+id+']" value="'+qty[id]+'" />')); 
+			$div.append($this.find('.icon')); 
+	}) 
+	new Craft.BaseElementSelectInput({ 
+		id: 'productPicker', 
+		name: 'products', 
+		elementType: 'craft\\commerce\\elements\\Variant', 
+		sources: null, 
+		criteria: null, 
+		sourceElementId: null, 
+		viewMode: 'list', 
+		limit: null, 
+		editable: false,
+		sortable: false, 
+		selectable: false, 
+		modalStorageKey: null, 
+		fieldId: null, 
+		onSelectElements: function(e) { 
+			$.each(e, function(i) { 
+				console.log(this); 
+				var $el = $('#productPicker .element[data-id="'+this.id+'"]'); 
+				{# var $qty = $el.find('input[name="qty['+this.id+']"]'); #} 
+				var $div = $('<div class="flex"></div>').appendTo($el); 
+				$div.append($el.find('.status')); 
+				$div.append($el.find('.label')); 
+				$div.append('Qty:'); 
+				$div.append($('<input type="number" min="1" class="text qty" data-id="'+this.id+'" name="qty['+this.id+']" value="1" />')); 
+				$div.append($el.find('.icon')); 
+			}); 
+		}, 
+	}); 
+{% endjs %} 
+{% do view.registerAssetBundle("kuriousagency\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}

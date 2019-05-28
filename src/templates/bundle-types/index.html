@@ -1,0 +1,49 @@
+{% extends 'commerce-bundles/_layouts' %}
+
+{% set title = 'Bundle Types' | t('bundles') %}
+{% set selectedSubnavItem = 'bundleTypes' %}
+
+{% set crumbs = [
+    { label: 'Bundle' | t('bundles'), url: url('bundles') },
+    { label: 'Bundle Types' | t('bundles'), url: url('commerce-bundles/bundle-types') },
+] %}
+
+{% set bundleTypes = craft.bundles.bundleTypes.getAllBundleTypes() %}
+{% block blockContent %}
+	<div id="noBundleTypes"{% if bundleTypes %} class="hidden"{% endif %}>
+		<p>{{ 'No bundle types exist yet.' | t('bundles') }}</p>
+	</div>
+
+	{% if bundleTypes | length %}
+		<table id="bundleTypes" class="data fullwidth collapsible">
+			<thead>
+    			<th scope="col">{{ 'Name' | t('bundles') }}</th>
+    			<th scope="col">{{ 'Handle' | t('bundles') }}</th>
+    			<td class="thin"></td>
+			</thead>
+			<tbody>
+    			{% for bundleType in bundleTypes %}
+    				<tr data-id="{{ bundleType.id }}" data-name="{{ bundleType.name | t('bundles') }}">
+    					<th scope="row" data-title="{{ 'Name' | t('bundles') }}"><a href="{{ url('commerce-bundles/bundle-types/' ~ bundleType.id) }}">{{ bundleType.name | t('commerce-bundles') }}</a></th>
+    					<td data-title="{{ 'Handle' | t('bundles') }}"><code>{{ bundleType.handle }}</code></td>
+    					<td class="thin"><a class="delete icon" title="{{ 'Delete' | t('bundles') }}" role="button"></a></td>
+    				</tr>
+    			{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+
+    <div id="newBundleType" class="buttons">
+        <a href="{{ url('commerce-bundles/bundle-types/new') }}" class="btn submit add icon">{{ 'New Bundle Type' | t('commerce-bundles') }}</a>
+    </div>
+{% endblock %}
+
+{% js %}
+	var adminTable = new Craft.AdminTable({
+		tableSelector: '#bundleTypes',
+		noObjectsSelector: '#noBundleTypes',
+		newObjectBtnSelector: '#newBundleType',
+		deleteAction: 'commerce-bundles/bundle-types/delete',
+		confirmDeleteMessage: '{{ 'Are you sure you want to delete “{name}” and all its bundles?' | t('commerce-bundles') }}'
+	});
+{% endjs %}

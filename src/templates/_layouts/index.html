@@ -1,0 +1,16 @@
+{% extends parentLayout ?? '_layouts/cp' %}
+
+{% do view.registerAssetBundle("kuriousagency\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}
+
+{% if title is not defined %}
+    {% set title = 'Bundles' | t('commerce-bundles') %}
+{% endif %}
+
+{% set content %}
+    {% block blockContent %}
+
+    {% endblock %}
+
+    <hr>
+
+{% endset %}
