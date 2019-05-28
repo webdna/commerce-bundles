@@ -2,8 +2,6 @@
 
 Bundles plugin for Craft Commerce
 
-![Screenshot](resources/img/plugin-logo.png)
-
 ## Requirements
 
 This plugin requires Craft CMS 3.0.0-beta.23 or later.
@@ -18,7 +16,7 @@ To install the plugin, follow these instructions.
 
 2. Then tell Composer to load the plugin:
 
-        composer require KuriousAgency/bundles
+        composer require kuriousagency/commerce-bundles
 
 3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Bundles.
 
