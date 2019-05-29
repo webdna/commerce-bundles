@@ -13,7 +13,7 @@ class Bundles extends BaseRelationField
 
     public static function displayName(): string
     {
-        return Craft::t('commerce', 'Bundles');
+        return Craft::t('commerce', 'Commerce Bundles');
     }
 
     protected static function elementType(): string
