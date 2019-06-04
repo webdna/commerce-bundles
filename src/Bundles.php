@@ -170,7 +170,9 @@ class Bundles extends Plugin
 	
 	public function getCpNavItem(): array
     {
-        $navItems = parent::getCpNavItem();
+		$navItems = parent::getCpNavItem();
+		
+		$navItems['label'] = Craft::t('commerce', 'Bundles');
 
         if (Craft::$app->getUser()->checkPermission('bundles-manageBundles')) {
             $navItems['subnav']['bundles'] = [
