@@ -160,7 +160,7 @@ class Bundles extends Plugin
 
         Craft::info(
             Craft::t(
-                'commerce',
+                'commerce-bundles',
                 '{name} plugin loaded',
                 ['name' => $this->name]
             ),
