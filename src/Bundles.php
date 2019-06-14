@@ -145,12 +145,12 @@ class Bundles extends Plugin
 
             foreach ($bundleTypes as $id => $bundleType) {
                 $suffix = ':' . $id;
-                $bundleTypePermissions['bundles-managebundleType' . $suffix] = ['label' => Craft::t('commerce', 'Manage “{type}” bundles', ['type' => $bundleType->name])];
+                $bundleTypePermissions['bundles-managebundleType' . $suffix] = ['label' => Craft::t('commerce-bundles', 'Manage “{type}” bundles', ['type' => $bundleType->name])];
             }
 
-            $event->permissions[Craft::t('commerce', 'Bundles')] = [
-				'bundles-manageBundles' => ['label' => Craft::t('commerce', 'Manage bundles'), 'nested' => $bundleTypePermissions],
-                'bundles-manageBundleType' => ['label' => Craft::t('commerce', 'Manage bundle types')],
+            $event->permissions[Craft::t('commerce-bundles', 'Bundles')] = [
+				'bundles-manageBundles' => ['label' => Craft::t('commerce-bundles', 'Manage bundles'), 'nested' => $bundleTypePermissions],
+                'bundles-manageBundleType' => ['label' => Craft::t('commerce-bundles', 'Manage bundle types')],
                 
             ];
         });
@@ -172,25 +172,25 @@ class Bundles extends Plugin
     {
 		$navItems = parent::getCpNavItem();
 		
-		$navItems['label'] = Craft::t('commerce', 'Bundles');
+		$navItems['label'] = Craft::t('commerce-bundles', 'Bundles');
 
         if (Craft::$app->getUser()->checkPermission('bundles-manageBundles')) {
             $navItems['subnav']['bundles'] = [
-                'label' => Craft::t('commerce', 'Bundles'),
+                'label' => Craft::t('commerce-bundles', 'Bundles'),
                 'url' => 'commerce-bundles/bundles',
             ];
         }
 
         if (Craft::$app->getUser()->checkPermission('bundles-manageBundleType')) {
             $navItems['subnav']['bundleTypes'] = [
-                'label' => Craft::t('commerce', 'Bundle Types'),
+                'label' => Craft::t('commerce-bundles', 'Bundle Types'),
                 'url' => 'commerce-bundles/bundle-types',
             ];
         }
 
         // if (Craft::$app->getUser()->getIsAdmin()) {
         //     $navItems['subnav']['settings'] = [
-        //         'label' => Craft::t('commerce', 'Settings'),
+        //         'label' => Craft::t('commerce-bundles', 'Settings'),
         //         'url' => 'bundles/settings',
         //     ];
         // }

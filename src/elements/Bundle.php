@@ -81,7 +81,7 @@ class Bundle extends Purchasable
      */
     public static function displayName(): string
     {
-        return Craft::t('commerce', 'Bundle');
+        return Craft::t('commerce-bundles', 'Bundle');
 	}
 	
 	public function __toString(): string
@@ -147,7 +147,7 @@ class Bundle extends Purchasable
         $sources = [
             [
                 'key' => '*',
-                'label' => Craft::t('commerce', 'All bundles'),
+                'label' => Craft::t('commerce-bundles', 'All bundles'),
                 'criteria' => [
                     'typeId' => $bundleTypeIds,
                     'editable' => $editable
@@ -156,7 +156,7 @@ class Bundle extends Purchasable
             ]
         ];
 
-        $sources[] = ['heading' => Craft::t('commerce', 'Bundle Types')];
+        $sources[] = ['heading' => Craft::t('commerce-bundles', 'Bundle Types')];
 
         foreach ($bundleTypes as $bundleType) {
             $key = 'bundleType:'.$bundleType->id;
@@ -182,8 +182,8 @@ class Bundle extends Purchasable
 
         $actions[] = Craft::$app->getElements()->createAction([
             'type' => Delete::class,
-            'confirmationMessage' => Craft::t('commerce', 'Are you sure you want to delete the selected bundles?'),
-            'successMessage' => Craft::t('commerce', 'Bundles deleted.'),
+            'confirmationMessage' => Craft::t('commerce-bundles', 'Are you sure you want to delete the selected bundles?'),
+            'successMessage' => Craft::t('commerce-bundles', 'Bundles deleted.'),
         ]);
 
         return $actions;
@@ -192,10 +192,10 @@ class Bundle extends Purchasable
 	public function getStatuses(): array
     {
         return [
-            self::STATUS_LIVE => Craft::t('commerce', 'Live'),
-            self::STATUS_PENDING => Craft::t('commerce', 'Pending'),
-            self::STATUS_EXPIRED => Craft::t('commerce', 'Expired'),
-            self::STATUS_DISABLED => Craft::t('commerce', 'Disabled')
+            self::STATUS_LIVE => Craft::t('commerce-bundles', 'Live'),
+            self::STATUS_PENDING => Craft::t('commerce-bundles', 'Pending'),
+            self::STATUS_EXPIRED => Craft::t('commerce-bundles', 'Expired'),
+            self::STATUS_DISABLED => Craft::t('commerce-bundles', 'Disabled')
         ];
 	}
 	
@@ -621,13 +621,13 @@ class Bundle extends Purchasable
     protected static function defineTableAttributes(): array
     {
         return [
-            'title' => ['label' => Craft::t('commerce', 'Title')],
-            'type' => ['label' => Craft::t('commerce', 'Type')],
-            'slug' => ['label' => Craft::t('commerce', 'Slug')],
-            'sku' => ['label' => Craft::t('commerce', 'SKU')],
-            'price' => ['label' => Craft::t('commerce', 'Price')],
-            'postDate' => ['label' => Craft::t('commerce', 'Post Date')],
-            'expiryDate' => ['label' => Craft::t('commerce', 'Expiry Date')],
+            'title' => ['label' => Craft::t('commerce-bundles', 'Title')],
+            'type' => ['label' => Craft::t('commerce-bundles', 'Type')],
+            'slug' => ['label' => Craft::t('commerce-bundles', 'Slug')],
+            'sku' => ['label' => Craft::t('commerce-bundles', 'SKU')],
+            'price' => ['label' => Craft::t('commerce-bundles', 'Price')],
+            'postDate' => ['label' => Craft::t('commerce-bundles', 'Post Date')],
+            'expiryDate' => ['label' => Craft::t('commerce-bundles', 'Expiry Date')],
         ];
     }
 
@@ -675,7 +675,7 @@ class Bundle extends Purchasable
                 return Craft::$app->getLocale()->getFormatter()->asCurrency($this->$attribute, strtoupper($code));
 
             case 'promotable':
-                return ($this->$attribute ? '<span data-icon="check" title="'.Craft::t('commerce', 'Yes').'"></span>' : '');
+                return ($this->$attribute ? '<span data-icon="check" title="'.Craft::t('commerce-bundles', 'Yes').'"></span>' : '');
 
             default:
                 return parent::tableAttributeHtml($attribute);
@@ -685,10 +685,10 @@ class Bundle extends Purchasable
     protected static function defineSortOptions(): array
     {
         return [
-            'title' => Craft::t('commerce', 'Title'),
-            'postDate' => Craft::t('commerce', 'Post Date'),
-            'expiryDate' => Craft::t('commerce', 'Expiry Date'),
-            'price' => Craft::t('commerce', 'Price'),
+            'title' => Craft::t('commerce-bundles', 'Title'),
+            'postDate' => Craft::t('commerce-bundles', 'Post Date'),
+            'expiryDate' => Craft::t('commerce-bundles', 'Expiry Date'),
+            'price' => Craft::t('commerce-bundles', 'Price'),
         ];
 	}
 

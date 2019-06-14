@@ -80,7 +80,7 @@ class BundlesController extends Controller
         if (!empty($variables['bundle']->id)) {
             $variables['title'] = $variables['bundle']->title;
         } else {
-            $variables['title'] = Craft::t('commerce', 'Create a New Bundle');
+            $variables['title'] = Craft::t('commerce-bundles', 'Create a New Bundle');
         }
 
         // Can't just use the entry's getCpEditUrl() because that might include the site handle when we don't want it
@@ -123,7 +123,7 @@ class BundlesController extends Controller
         $bundle = Bundle::findOne($bundleId);
 
         if (!$bundle) {
-            throw new Exception(Craft::t('commerce', 'No bundle exists with the ID “{id}”.',['id' => $bundleId]));
+            throw new Exception(Craft::t('commerce-bundles', 'No bundle exists with the ID “{id}”.',['id' => $bundleId]));
         }
 
         $this->enforceBundlePermissions($bundle);
@@ -133,7 +133,7 @@ class BundlesController extends Controller
                 $this->asJson(['success' => false]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('commerce', 'Couldn’t delete bundle.'));
+            Craft::$app->getSession()->setError(Craft::t('commerce-bundles', 'Couldn’t delete bundle.'));
             Craft::$app->getUrlManager()->setRouteParams([
                 'bundle' => $bundle
             ]);
@@ -145,7 +145,7 @@ class BundlesController extends Controller
             $this->asJson(['success' => true]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('commerce', 'Bundle deleted.'));
+        Craft::$app->getSession()->setNotice(Craft::t('commerce-bundles', 'Bundle deleted.'));
 
         return $this->redirectToPostedUrl($bundle);
     }
@@ -172,7 +172,7 @@ class BundlesController extends Controller
                 ]);
 			}
 
-			Craft::$app->getSession()->setError(Craft::t('commerce', 'Couldn’t save bundle.'));
+			Craft::$app->getSession()->setError(Craft::t('commerce-bundles', 'Couldn’t save bundle.'));
 
             // Send the category back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -461,7 +461,7 @@ class BundlesController extends Controller
             $bundle = Bundles::getInstance()->bundles->getBundleById($bundleId, $siteId);
 
             if (!$bundle) {
-                throw new Exception(Craft::t('commerce', 'No bundle with the ID “{id}”', ['id' => $bundleId]));
+                throw new Exception(Craft::t('commerce-bundles', 'No bundle with the ID “{id}”', ['id' => $bundleId]));
             }
         } else {
             $bundle = new Bundle();

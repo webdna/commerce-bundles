@@ -49,7 +49,7 @@ class BundleTypesController extends Controller
         if (!empty($variables['bundleTypeId'])) {
             $variables['title'] = $variables['bundleType']->name;
         } else {
-            $variables['title'] = Craft::t('commerce', 'Create a Bundle Type');
+            $variables['title'] = Craft::t('commerce-bundles', 'Create a Bundle Type');
         }
         
         return $this->renderTemplate('commerce-bundles/bundle-types/_edit', $variables);
@@ -98,12 +98,12 @@ class BundleTypesController extends Controller
 
         // Save it
         if (Bundles::getInstance()->bundleTypes->saveBundleType($bundleType)) {
-            Craft::$app->getSession()->setNotice(Craft::t('commerce', 'Bundle type saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('commerce-bundles', 'Bundle type saved.'));
 
             return $this->redirectToPostedUrl($bundleType);
         }
 
-        Craft::$app->getSession()->setError(Craft::t('commerce', 'Couldn’t save bundle type.'));
+        Craft::$app->getSession()->setError(Craft::t('commerce-bundles', 'Couldn’t save bundle type.'));
 
         // Send the bundleType back to the template
         Craft::$app->getUrlManager()->setRouteParams([
