@@ -8,7 +8,7 @@
     { label: 'Bundle Types' | t('bundles'), url: url('commerce-bundles/bundle-types') },
 ] %}
 
-{% set bundleTypes = craft.bundles.bundleTypes.getAllBundleTypes() %}
+{% set bundleTypes = craft.commerceBundles.bundleTypes.getAllBundleTypes() %}
 {% block blockContent %}
 	<div id="noBundleTypes"{% if bundleTypes %} class="hidden"{% endif %}>
 		<p>{{ 'No bundle types exist yet.' | t('bundles') }}</p>

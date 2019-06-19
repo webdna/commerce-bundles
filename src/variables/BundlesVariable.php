@@ -31,14 +31,14 @@ class BundlesVariable extends Behavior
 	 /**
      * @var Plugin
      */
-	public $bundles;
+	public $commerceBundles;
 
     public function init()
     {
         parent::init();
 
-        // Point `craft.bundles` to the kuriousagency\bundles\Bundles instance
-		$this->bundles = Bundles::$plugin;
+        // Point `craft.commerceBundles` to the kuriousagency\bundles\Bundles instance
+		$this->commerceBundles = Bundles::$plugin;
 
 	}	
 	
@@ -48,7 +48,7 @@ class BundlesVariable extends Behavior
      * @param mixed $criteria
      * @return BundleQuery
      */
-    public function bundleProducts($criteria = null): BundleQuery
+    public function bundles($criteria = null): BundleQuery
     {
         $query = Bundle::find();
         if ($criteria) {

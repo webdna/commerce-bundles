@@ -12,7 +12,7 @@
 
     {% set bundleTypes = [] %}
 
-    {% for bundleType in craft.bundles.bundleTypes.getEditableBundleTypes() %}
+    {% for bundleType in craft.commerceBundles.bundleTypes.getEditableBundleTypes() %}
         {% set bundleTypes = bundleTypes | merge([{
             id: bundleType.id,
             name: bundleType.name,
