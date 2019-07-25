@@ -2,7 +2,7 @@
 {% set selectedSubnavItem = 'bundles' %} 
 {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ "commerceproducts commerceproductsedit bundlesedit" %}
 
-{% set crumbs = [ { label: 'Bundles' | t('bundles'), url: url('bundles') }, { label: bundleType.name | t('bundles'), url: url('bundles/bundles/' ~ bundleType.handle) }, ] %} 
+{% set crumbs = [ { label: 'Bundles' | t('commerce-bundles'), url: url('commerce-bundles') }, { label: bundleType.name | t('commerce-bundles'), url: url('commerce-bundles/bundles/' ~ bundleType.handle) }, ] %} 
 {% set fullPageForm = true %} 
 {% set saveShortcutRedirect = continueEditingUrl %} 
 {% set products = craft.products.id(410,413) %} 
@@ -26,13 +26,13 @@
 {{ block('actionButton') }}
 {% endblock %} {% block actionButton %}
 <div class="btngroup">
-	<input type="submit" class="btn submit" value="{{ 'Save' | t('bundles') }}" />
+	<input type="submit" class="btn submit" value="{{ 'Save' | t('commerce-bundles') }}" />
 	<div class="btn submit menubtn"></div>
 	<div class="menu">
 		<ul>
 			<li>
 				<a class="formsubmit" data-redirect="{{ continueEditingUrl | hash }}">
-					{{ 'Save and continue editing' | t('bundles') }}
+					{{ 'Save and continue editing' | t('commerce-bundles') }}
 					{{ forms.optionShortcutLabel('S') }}
 				</a>
 			</li>
@@ -40,7 +40,7 @@
 			{% if bundle.id %}
 			<li>
 				<a class="formsubmit" data-param="bundleId" data-value="" data-redirect="{{ continueEditingUrl | hash }}">
-					{{ 'Save as a new bundle' | t('bundles') }}
+					{{ 'Save as a new bundle' | t('commerce-bundles') }}
 				</a>
 			</li>
 			{% endif %}
@@ -50,8 +50,8 @@
 		<hr />
 		<ul>
 			<li>
-				<a class="formsubmit error" data-action="commerce-bundles/bundles/delete" data-confirm="{{ 'Are you sure you want to delete this bundle?' | t('bundles') }}" data-redirect="{{ 'commerce-bundles/bundles' | hash }}">
-					{{ 'Delete' | t('bundles') }}
+				<a class="formsubmit error" data-action="commerce-bundles/bundles/delete" data-confirm="{{ 'Are you sure you want to delete this bundle?' | t('commerce-bundles') }}" data-redirect="{{ 'commerce-bundles/bundles' | hash }}">
+					{{ 'Delete' | t('commerce-bundles') }}
 				</a>
 			</li>
 		</ul>
@@ -136,7 +136,7 @@
 	{{ bundleFields.generalMetaFields(bundle) }}
 
 	{{ forms.lightswitchField({
-            label: 'Enabled' | t('bundles'),
+            label: 'Enabled' | t('commerce-bundles'),
             id: 'enabled',
             name: 'enabled',
             on: bundle.enabled
@@ -144,7 +144,7 @@
 
 	{% if craft.app.getIsMultiSite() %}
 	{{ forms.lightswitchField({
-                label: 'Enabled for site' | t('bundles'),
+                label: 'Enabled for site' | t('commerce-bundles'),
                 id: 'enabledForSite',
                 name: 'enabledForSite',
                 on: bundle.enabledForSite
@@ -174,12 +174,12 @@
 
 <div class="meta read-only">
 	<div class="data">
-		<h5 class="heading">{{ 'Date Created' | t('bundles') }}</h5>
+		<h5 class="heading">{{ 'Date Created' | t('commerce-bundles') }}</h5>
 		<div class="value">{{ bundle.dateCreated | date('short') }} {{ bundle.dateCreated | time('short') }}</div>
 	</div>
 
 	<div class="data">
-		<h5 class="heading">{{ 'Date Updated' | t('bundles') }}</h5>
+		<h5 class="heading">{{ 'Date Updated' | t('commerce-bundles') }}</h5>
 		<div class="value">{{ bundle.dateUpdated | date('short') }} {{ bundle.dateUpdated | time('short') }}</div>
 	</div>
 </div>

@@ -2,12 +2,12 @@
 	{%- import '_includes/forms' as forms -%}
 
 	{{ forms.textField({
-		label: 'Title' | t('bundles'),
+		label: 'Title' | t('commerce-bundles'),
 		site: bundle.site,
 		id: 'title',
 		name: 'title',
 		value: bundle.title,
-		placeholder: 'Enter title' | t('bundles'),
+		placeholder: 'Enter title' | t('commerce-bundles'),
 		errors: bundle.getErrors('title'),
 		first: true,
 		autofocus: true,
@@ -20,16 +20,16 @@
     {%- import '_includes/forms' as forms -%}
         
     {{ forms.textField({
-        label: 'Slug' | t('bundles'),
+        label: 'Slug' | t('commerce-bundles'),
         id: 'slug',
         name: 'slug',
         value: bundle.slug,
-        placeholder: 'Enter slug' | t('bundles'),
+        placeholder: 'Enter slug' | t('commerce-bundles'),
         errors: bundle.getErrors('slug') | merge(bundle.getErrors('uri'))
     }) }}
 
     {{ forms.dateTimeField({
-        label: 'Post Date' | t('bundles'),
+        label: 'Post Date' | t('commerce-bundles'),
         id: 'postDate',
         name: 'postDate',
         value: bundle.postDate,
@@ -37,7 +37,7 @@
     }) }}
 
     {{ forms.dateTimeField({
-        label: 'Expiry Date' | t('bundles'),
+        label: 'Expiry Date' | t('commerce-bundles'),
         id: 'expiryDate',
         name: 'expiryDate',
         value: bundle.expiryDate,
@@ -49,7 +49,7 @@
     {%- import '_includes/forms' as forms -%}
 
     {{ forms.selectField({
-        label: 'Tax Category' | t('bundles'),
+        label: 'Tax Category' | t('commerce-bundles'),
         name: 'taxCategoryId',
         value: bundle.taxCategoryId,
         required: true,
@@ -62,7 +62,7 @@
     {% endfor %}
 
     {{ forms.selectField({
-        label: 'Shipping Category' | t('bundles'),
+        label: 'Shipping Category' | t('commerce-bundles'),
         name: 'shippingCategoryId',
         value: bundle.shippingCategoryId,
         required: true,
@@ -75,22 +75,22 @@
 
     {{ forms.textField({
         id: 'sku',
-        label: 'SKU' | t('bundles'),
+        label: 'SKU' | t('commerce-bundles'),
         required: true,
         name: 'sku',
         value: bundle.sku,
         class: 'code',
-        placeholder: 'Enter SKU' | t('bundles'),
+        placeholder: 'Enter SKU' | t('commerce-bundles'),
         errors: bundle.getErrors('sku')
     }) }}
 
     {{ forms.textField({
         id: 'price',
-        label: 'Price' | t('bundles'),
+        label: 'Price' | t('commerce-bundles'),
 		required: true,
         name: 'price',
         value: (bundle.price == '0' ? '0' | number : (bundle.price ?  bundle.price | number ?: '')),
-        placeholder: 'Enter price' | t('bundles'),
+        placeholder: 'Enter price' | t('commerce-bundles'),
         unit: craft.commerce.paymentCurrencies.primaryPaymentCurrency.iso | upper,
         errors: bundle.getErrors('price'),
     }) }}

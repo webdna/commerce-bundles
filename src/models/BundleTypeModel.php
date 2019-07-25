@@ -49,7 +49,7 @@ class BundleTypeModel extends Model
 
     public function getCpEditUrl(): string
     {
-        return UrlHelper::cpUrl('bundles/types/' . $this->id);
+        return UrlHelper::cpUrl('commerce-bundles/types/' . $this->id);
     }
 
     public function getSiteSettings(): array

@@ -1,32 +1,32 @@
 {% extends 'commerce-bundles/_layouts' %}
 
-{% set title = 'Bundle Types' | t('bundles') %}
+{% set title = 'Bundle Types' | t('commerce-bundles') %}
 {% set selectedSubnavItem = 'bundleTypes' %}
 
 {% set crumbs = [
-    { label: 'Bundle' | t('bundles'), url: url('bundles') },
-    { label: 'Bundle Types' | t('bundles'), url: url('commerce-bundles/bundle-types') },
+    { label: 'Bundle' | t('commerce-bundles'), url: url('commerce-bundles') },
+    { label: 'Bundle Types' | t('commerce-bundles'), url: url('commerce-bundles/bundle-types') },
 ] %}
 
 {% set bundleTypes = craft.commerceBundles.bundleTypes.getAllBundleTypes() %}
 {% block blockContent %}
 	<div id="noBundleTypes"{% if bundleTypes %} class="hidden"{% endif %}>
-		<p>{{ 'No bundle types exist yet.' | t('bundles') }}</p>
+		<p>{{ 'No bundle types exist yet.' | t('commerce-bundles') }}</p>
 	</div>
 
 	{% if bundleTypes | length %}
 		<table id="bundleTypes" class="data fullwidth collapsible">
 			<thead>
-    			<th scope="col">{{ 'Name' | t('bundles') }}</th>
-    			<th scope="col">{{ 'Handle' | t('bundles') }}</th>
+    			<th scope="col">{{ 'Name' | t('commerce-bundles') }}</th>
+    			<th scope="col">{{ 'Handle' | t('commerce-bundles') }}</th>
     			<td class="thin"></td>
 			</thead>
 			<tbody>
     			{% for bundleType in bundleTypes %}
-    				<tr data-id="{{ bundleType.id }}" data-name="{{ bundleType.name | t('bundles') }}">
-    					<th scope="row" data-title="{{ 'Name' | t('bundles') }}"><a href="{{ url('commerce-bundles/bundle-types/' ~ bundleType.id) }}">{{ bundleType.name | t('commerce-bundles') }}</a></th>
-    					<td data-title="{{ 'Handle' | t('bundles') }}"><code>{{ bundleType.handle }}</code></td>
-    					<td class="thin"><a class="delete icon" title="{{ 'Delete' | t('bundles') }}" role="button"></a></td>
+    				<tr data-id="{{ bundleType.id }}" data-name="{{ bundleType.name | t('commerce-bundles') }}">
+    					<th scope="row" data-title="{{ 'Name' | t('commerce-bundles') }}"><a href="{{ url('commerce-bundles/bundle-types/' ~ bundleType.id) }}">{{ bundleType.name | t('commerce-bundles') }}</a></th>
+    					<td data-title="{{ 'Handle' | t('commerce-bundles') }}"><code>{{ bundleType.handle }}</code></td>
+    					<td class="thin"><a class="delete icon" title="{{ 'Delete' | t('commerce-bundles') }}" role="button"></a></td>
     				</tr>
     			{% endfor %}
 			</tbody>
