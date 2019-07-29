@@ -1,6 +1,6 @@
 # Bundles plugin for Craft CMS 3.x
 
-Bundles plugin for Craft Commerce
+Create a bundle purchasable of existing commerce products.
 
 ## Requirements
 
@@ -22,20 +22,66 @@ To install the plugin, follow these instructions.
 
 ## Bundles Overview
 
--Insert text here-
+Bundles allows you to create a purchasable from existing commerce products with quantites.
 
 ## Configuring Bundles
 
--Insert text here-
+**Bundle Types**
+
+Bundle Types is where you can define the template and URL for bundle. You can add any custom fields to your bundle types.
+
+**Bundles**
+
+Here is where you setup your Bundle, select the products and quantities of the product that should be used to make up the Bundle. Similar to Commerce Products add an SKU and price for the Bundle.
 
 ## Using Bundles
 
--Insert text here-
+You can access your bundles from your templates using a bundle query:
 
-## Bundles Roadmap
+```twig
+{% set myBundleQuery = craft.bundles() %}
+```
 
-Some things to do, and ideas for potential features:
+When you access a bundle directly via it's URL the the `bundle` variable is available.
 
-* Release it
+***
+
+**Available Methods**
+
+Once you have your bundle there are methods for accessing the bundles products and quanities, and for checking stock.
+
+*Products*
+
+```twig
+{# Returns an array of the bundles products (Commerce Variant object) #}
+
+bundle.getProducts()
+```
+
+*Quantities*
+
+```twig
+{# Returns an array of quantites with the key set to the variantId #}
+
+bundle.getQtys()
+```
+
+*Stock*
+
+```twig
+{# checks to see if all the products in the bundle have stock #}
+
+bundle.hasStock()
+```
+
+## Example
+
+Display bundle products and quantities.
+
+```twig
+{% for id,qty in bundle.getQtys() %}
+   {{ qty ~ ' x ' ~ craft.variants.id(id).one.description }}
+{% endfor %}
+```
 
 Brought to you by [Kurious Agency](https://kurious.agency)
