@@ -35,7 +35,7 @@ class BundlesController extends Controller
 
     public function init()
     {
-        $this->requirePermission('bundles-manageBundles');
+        $this->requirePermission('commerce-bundles-manageBundles');
 
         parent::init();
     }

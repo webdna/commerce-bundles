@@ -19,7 +19,7 @@ class BundleTypesController extends Controller
 
     public function init()
     {
-        $this->requirePermission('bundle-manageTypes');
+        $this->requirePermission('commerce-bundle-manageTypes');
 
         parent::init();
     }

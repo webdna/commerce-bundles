@@ -145,12 +145,12 @@ class Bundles extends Plugin
 
             foreach ($bundleTypes as $id => $bundleType) {
                 $suffix = ':' . $id;
-                $bundleTypePermissions['bundles-managebundleType' . $suffix] = ['label' => Craft::t('commerce-bundles', 'Manage “{type}” bundles', ['type' => $bundleType->name])];
+                $bundleTypePermissions['commerce-bundles-managebundleType' . $suffix] = ['label' => Craft::t('commerce-bundles', 'Manage “{type}” bundles', ['type' => $bundleType->name])];
             }
 
             $event->permissions[Craft::t('commerce-bundles', 'Bundles')] = [
-				'bundles-manageBundles' => ['label' => Craft::t('commerce-bundles', 'Manage bundles'), 'nested' => $bundleTypePermissions],
-                'bundles-manageBundleType' => ['label' => Craft::t('commerce-bundles', 'Manage bundle types')],
+				'commerce-bundles-manageBundles' => ['label' => Craft::t('commerce-bundles', 'Manage bundles'), 'nested' => $bundleTypePermissions],
+                'commerce-bundles-manageBundleType' => ['label' => Craft::t('commerce-bundles', 'Manage bundle types')],
                 
             ];
         });
@@ -174,14 +174,14 @@ class Bundles extends Plugin
 		
 		$navItems['label'] = Craft::t('commerce-bundles', 'Bundles');
 
-        if (Craft::$app->getUser()->checkPermission('bundles-manageBundles')) {
+        if (Craft::$app->getUser()->checkPermission('commerce-bundles-manageBundles')) {
             $navItems['subnav']['bundles'] = [
                 'label' => Craft::t('commerce-bundles', 'Bundles'),
                 'url' => 'commerce-bundles/bundles',
             ];
         }
 
-        if (Craft::$app->getUser()->checkPermission('bundles-manageBundleType')) {
+        if (Craft::$app->getUser()->checkPermission('commerce-bundles-manageBundleType')) {
             $navItems['subnav']['bundleTypes'] = [
                 'label' => Craft::t('commerce-bundles', 'Bundle Types'),
                 'url' => 'commerce-bundles/bundle-types',
