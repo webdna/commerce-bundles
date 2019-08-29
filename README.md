@@ -90,4 +90,10 @@ Display a list of products and quantities that make up the bundle.
 {% endfor %}
 ```
 
+**Fields**
+
+Bundles also includes a *Bundles* field type.
+
+![Screenshot](resources/screenshots/bundle-field-type.png)
+
 Brought to you by [Kurious Agency](https://kurious.agency)
