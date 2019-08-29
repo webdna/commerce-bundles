@@ -2,7 +2,7 @@
 	"name": "kuriousagency/commerce-bundles",
 	"description": "Bundles plugin for Craft Commerce",
 	"type": "craft-plugin",
-	"version": "1.0.11",
+	"version": "1.0.12",
 	"keywords": [
 		"craft",
 		"cms",
@@ -14,7 +14,7 @@
 		"docs": "https://github.com/KuriousAgency/commerce-bundles/blob/master/README.md",
 		"issues": "https://github.com/KuriousAgency/commerce-bundles/issues"
 	},
-	"license": "MIT",
+	"license": "proprietary",
 	"authors": [
 		{
 			"name": "Kurious Agency",
