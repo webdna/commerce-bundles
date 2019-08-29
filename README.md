@@ -36,7 +36,7 @@ Bundle Types is where you can define the template and URL for bundle. You can ad
 
 **Bundles**
 
-Here is where you setup your Bundle, select the products and quantities of the product that should be used to make up the Bundle. Similar to Commerce Products add an SKU and price for the Bundle.
+Here is where you setup your Bundle, select the products and quantities of the product that make up the Bundle. Similar to Commerce Products add an SKU and price for the Bundle.
 
 ![Screenshot](resources/screenshots/bundle.png)
 
@@ -48,7 +48,7 @@ You can access your bundles from your templates using a bundle query:
 {% set myBundleQuery = craft.bundles() %}
 ```
 
-When you access a bundle directly via it's URL the the `bundle` variable is available.
+When you access a bundle directly via it's URL the `bundle` variable is available.
 
 ***
 
@@ -79,6 +79,13 @@ bundle.getQtys()
 
 bundle.hasStock()
 ```
+***
+
+**Fields**
+
+Bundles also includes a *Bundles* field type.
+
+![Screenshot](resources/screenshots/bundle-field-type.png)
 
 ## Example
 
@@ -89,11 +96,4 @@ Display a list of products and quantities that make up the bundle.
    {{ qty ~ ' x ' ~ craft.variants.id(id).one.description }}
 {% endfor %}
 ```
-
-**Fields**
-
-Bundles also includes a *Bundles* field type.
-
-![Screenshot](resources/screenshots/bundle-field-type.png)
-
 Brought to you by [Kurious Agency](https://kurious.agency)
