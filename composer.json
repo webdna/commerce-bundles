@@ -2,7 +2,7 @@
 	"name": "kuriousagency/commerce-bundles",
 	"description": "Bundles plugin for Craft Commerce",
 	"type": "craft-plugin",
-	"version": "1.0.8",
+	"version": "1.0.14",
 	"keywords": [
 		"craft",
 		"cms",

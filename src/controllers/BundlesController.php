@@ -89,7 +89,7 @@ class BundlesController extends Controller
         // Set the "Continue Editing" URL
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'] . (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->currentSite->id !== $variables['site']->id ? '/' . $variables['site']->handle : '');
 
-        $this->_maybeEnableLivePreview($variables);
+        $this->_livePreview($variables);
 
         $variables['tabs'] = [];
 
@@ -417,14 +417,14 @@ class BundlesController extends Controller
         }
     }
 
-    private function _maybeEnableLivePreview(array &$variables)
+    private function _livePreview(array &$variables)
     {
         if (!Craft::$app->getRequest()->isMobileBrowser(true) && Bundles::$plugin->bundleTypes->isBundleTypeTemplateValid($variables['bundleType'], $variables['site']->id)) {
             $this->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#meta-pane',
                     'previewUrl' => $variables['bundle']->getUrl(),
-                    'previewAction' => 'commerce-bundles/bundles/preview-bundle',
+                    'previewAction' => Craft::$app->getSecurity()->hashData('commerce-bundles/bundles/preview-bundle'),
                     'previewParams' => [
                         'typeId' => $variables['bundleType']->id,
                         'bundleId' => $variables['bundle']->id,

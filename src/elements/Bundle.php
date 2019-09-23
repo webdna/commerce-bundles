@@ -612,7 +612,6 @@ class Bundle extends Purchasable
                 'template' => $bundleTypeSiteSettings[$siteId]->template,
                 'variables' => [
                     'bundle' => $this,
-                    'product' => $this,
                 ]
             ]
         ];
