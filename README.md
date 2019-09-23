@@ -22,7 +22,7 @@ To install the plugin, follow these instructions.
 
 ## Bundles Overview
 
-Bundles allows you to create a purchasable from existing commerce products with quantites.
+Bundles allows you to create a bundle containing a combination of different products (or a single product with multiple quantities). Set an overall price for the bundle, giving you the option to offer a discount or promotion (for example 3 for 2).
 
 ## Configuring Bundles
 
@@ -30,9 +30,15 @@ Bundles allows you to create a purchasable from existing commerce products with 
 
 Bundle Types is where you can define the template and URL for bundle. You can add any custom fields to your bundle types.
 
+![Screenshot](resources/screenshots/bundle-types.png)
+
+![Screenshot](resources/screenshots/bundle-type-fields.png)
+
 **Bundles**
 
-Here is where you setup your Bundle, select the products and quantities of the product that should be used to make up the Bundle. Similar to Commerce Products add an SKU and price for the Bundle.
+Here is where you setup your Bundle, select the products and quantities of the product that make up the Bundle. Similar to Commerce Products add an SKU and price for the Bundle.
+
+![Screenshot](resources/screenshots/bundle.png)
 
 ## Using Bundles
 
@@ -42,7 +48,7 @@ You can access your bundles from your templates using a bundle query:
 {% set myBundleQuery = craft.bundles() %}
 ```
 
-When you access a bundle directly via it's URL the the `bundle` variable is available.
+When you access a bundle directly via it's URL the `bundle` variable is available.
 
 ***
 
@@ -73,15 +79,21 @@ bundle.getQtys()
 
 bundle.hasStock()
 ```
+***
+
+**Fields**
+
+Bundles also includes a *Bundles* field type.
+
+![Screenshot](resources/screenshots/bundle-field-type.png)
 
 ## Example
 
-Display bundle products and quantities.
+Display a list of products and quantities that make up the bundle.
 
 ```twig
 {% for id,qty in bundle.getQtys() %}
    {{ qty ~ ' x ' ~ craft.variants.id(id).one.description }}
 {% endfor %}
 ```
-
 Brought to you by [Kurious Agency](https://kurious.agency)
