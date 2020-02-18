@@ -504,6 +504,13 @@ class Bundle extends Purchasable
 
 		return 0;
 	}
+
+	public function getProducts()
+	{
+		Craft::$app->getDeprecator()->log('Bundle::getProducts()', 'Bundle::getProducts() has been deprecated. Use Bundle::getPurchasables() instead');
+
+		return $this->getPurchasables();
+	}
 	
 	public function getPurchasables() {
 		if (null === $this->_purchasables) {
