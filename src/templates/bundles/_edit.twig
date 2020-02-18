@@ -90,37 +90,38 @@
 <div id="fields">
 	{{ bundleFields.titleField(bundle) }}
 
-	<div class="field first" id="products-field">
+{% for purchasableType in purchasableTypes %}
+	{% set id = 'purchasables-'~purchasableType.elementType|id %}
+	<div class="field first" id="{{id}}-field">
 		<div class="heading">
-			<label id="products-label" class="required" for="products">Please select the products and quantities for this bundle</label>
+			<label id="{{id}}-label" class="required" for="{{id}}">Please select the {{purchasableType.name}} and quantities for this bundle</label>
 		</div>
 
-		<input type="hidden" name="products" value="" />
+		<input type="hidden" name="purchasables[{{purchasableType.elementType}}]" value="" />
 
 		<div class="flex">
-			<div id="productPicker" class="elementselect">
+			<div id="{{id}}-Picker" class="elementselect">
 				<div class="elements">
-					{% for element in bundle.products %} {% include "_elements/element" with { context: 'field', size: 'small', name: 'products' } %} {% endfor %}
+					{% for element in purchasables[purchasableType.elementType] ?? [] %} {% include "_elements/element" with { context: 'field', size: 'small', name: 'purchasables['~purchasableType.elementType~']' } %} {% endfor %}
 				</div>
-				<div class="btn add icon dashed">Choose product</div>
+				<div class="btn add icon dashed">Choose {{purchasableType.name}}</div>
 			</div>
 		</div>
-		{% if bundle.getErrors('products') %}
-			 <ul class="errors">
-				{% for error in bundle.getErrors('products') %}
-					<li>{{ error }}</li>
-				{% endfor %}
-			</ul>
+		{% if bundle.getErrors('purchasables-'~purchasableType.elementType|replace('\\','-')) %}
+		<ul class="errors">
+			{% for error in bundle.getErrors('purchasables-'~purchasableType.elementType|replace('\\','-')) %}
+			<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+		{% endif %} {% if bundle.getErrors('qtys') %}
+		<ul class="errors">
+			{% for error in bundle.getErrors('qtys') %}
+			<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
 		{% endif %}
-		{% if bundle.getErrors('qtys') %}
-			 <ul class="errors">
-				{% for error in bundle.getErrors('qtys') %}
-					<li>{{ error }}</li>
-				{% endfor %}
-			</ul>
-		{% endif %}
-
 	</div>
+{% endfor %}
 
 	<div>
 		{% for tab in bundleType.getFieldLayout().getTabs() %}
@@ -185,26 +186,33 @@
 </div>
 {% endif %} {% endblock %} 
 {% js %} 
-var $elements = $('#productPicker .element'), 
-	qty = { {% for key,qty in bundle.qtys %}
+var elements = [];
+var qty = [];
+{% for purchasableType in purchasableTypes %}
+	{% set id = 'purchasables-'~purchasableType.elementType|id %}
+	{% set type = purchasableType.elementType|replace({'\\':'\\\\'}) %}
+	
+	elements['{{id}}'] = $('#{{id}}-Picker .element'); 
+	qty['{{id}}'] = { {% for key,qty in bundle.qtys %}
 				{% set value = qty > 0 ? qty : 1 %}
 				{{ key ~ ':' ~ value }}, 
 			{% endfor %} 
 		}; 
-	$elements.each(function(e) { 
+		//console.log(elements['{{id}}'])
+	elements['{{id}}'].each(function(e) { 
 		var $this = $(this), 
 			id = $this.data('id'); 
 		var $div = $('<div class="flex"></div>').appendTo($this); 
 			$div.append($this.find('.status')); 
 			$div.append($this.find('.label')); 
-			$div.append('Qty:'); 
-			$div.append($('<input type="number" min="1" class="text qty" data-id="'+id+'" name="qty['+id+']" value="'+qty[id]+'" />')); 
+			$div.append('<div class="label">Qty: <input type="number" min="1" class="text qty" data-id="'+id+'" name="qty['+id+']" value="'+qty['{{id}}'][id]+'" /></div>'); 
+			{# $div.append($('<input type="number" min="1" class="text qty" data-id="'+id+'" name="qty[{{type}}]['+id+']" value="'+qty[{{id}}][id]+'" />'));  #}
 			$div.append($this.find('.icon')); 
 	}) 
 	new Craft.BaseElementSelectInput({ 
-		id: 'productPicker', 
-		name: 'products', 
-		elementType: 'craft\\commerce\\elements\\Variant', 
+		id: '{{id}}-Picker', 
+		name: 'purchasables[{{type}}]', 
+		elementType: '{{type}}', 
 		sources: null, 
 		criteria: null, 
 		sourceElementId: null, 
@@ -218,16 +226,19 @@ var $elements = $('#productPicker .element'),
 		onSelectElements: function(e) { 
 			$.each(e, function(i) { 
 				console.log(this); 
-				var $el = $('#productPicker .element[data-id="'+this.id+'"]'); 
-				{# var $qty = $el.find('input[name="qty['+this.id+']"]'); #} 
+				var $el = $('#{{id}}-Picker .element[data-id="'+this.id+'"]'); 
 				var $div = $('<div class="flex"></div>').appendTo($el); 
 				$div.append($el.find('.status')); 
 				$div.append($el.find('.label')); 
-				$div.append('Qty:'); 
-				$div.append($('<input type="number" min="1" class="text qty" data-id="'+this.id+'" name="qty['+this.id+']" value="1" />')); 
+				$div.append('<div class="label">Qty: <input type="number" min="1" class="text qty" data-id="'+this.id+'" name="qty['+this.id+']" value="1" /></div>'); 
 				$div.append($el.find('.icon')); 
 			}); 
 		}, 
 	}); 
+{% endfor %}
 {% endjs %} 
 {% do view.registerAssetBundle("kuriousagency\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}
+
+
+
+
