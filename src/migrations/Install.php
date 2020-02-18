@@ -92,10 +92,11 @@ class Install extends Migration
 				'uid' => $this->uid(),
 			]);
 
-			$this->createTable('{{%bundles_products}}', [
+			$this->createTable('{{%bundles_purchasables}}', [
 				'id' => $this->primaryKey(),
-				'bundleId' => $this->integer(),
-				'purchasableId' => $this->integer(),
+				'bundleId' => $this->integer()->notNull(),
+				'purchasableId' => $this->integer()->notNull(),
+				'purchasableType' => $this->string()->notNull(),
 				'qty' => $this->integer(),
 				'dateCreated' => $this->dateTime()->notNull(),
 				'dateUpdated' => $this->dateTime()->notNull(),
@@ -143,8 +144,8 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%bundles_bundles}}', 'taxCategoryId', false), '{{%bundles_bundles}}', 'taxCategoryId', false);
 		$this->createIndex($this->db->getIndexName('{{%bundles_bundles}}', 'shippingCategoryId', false), '{{%bundles_bundles}}', 'shippingCategoryId', false);
 
-		$this->createIndex($this->db->getIndexName('{{%bundles_products}}', 'bundleId', true), '{{%bundles_products}}', 'bundleId', false);
-		$this->createIndex($this->db->getIndexName('{{%bundles_products}}', 'purchasableId', true), '{{%bundles_products}}', 'purchasableId', false);
+		$this->createIndex($this->db->getIndexName('{{%bundles_purchasables}}', 'bundleId', true), '{{%bundles_purchasables}}', 'bundleId', false);
+		$this->createIndex($this->db->getIndexName('{{%bundles_purchasables}}', 'purchasableId', true), '{{%bundles_purchasables}}', 'purchasableId', false);
 
 		$this->createIndex($this->db->getIndexName('{{%bundles_bundletypes}}', 'handle', true), '{{%bundles_bundletypes}}', 'handle', true);
         $this->createIndex($this->db->getIndexName('{{%bundles_bundletypes}}', 'fieldLayoutId', false), '{{%bundles_bundletypes}}', 'fieldLayoutId', false);
@@ -163,8 +164,8 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%bundles_bundles}}', 'taxCategoryId'), '{{%bundles_bundles}}', 'taxCategoryId', '{{%commerce_taxcategories}}', 'id', null, null);
 		$this->addForeignKey($this->db->getForeignKeyName('{{%bundles_bundles}}', 'typeId'), '{{%bundles_bundles}}', 'typeId', '{{%bundles_bundletypes}}', 'id', 'CASCADE', null);
 
-		$this->addForeignKey($this->db->getForeignKeyName('{{%bundles_products}}', 'bundleId'), '{{%bundles_products}}', 'bundleId', '{{%bundles_bundles}}', 'id', 'CASCADE', null);
-		$this->addForeignKey($this->db->getForeignKeyName('{{%bundles_products}}', 'purchasableId'), '{{%bundles_products}}', 'purchasableId', '{{%commerce_variants}}', 'id', 'CASCADE', null);
+		$this->addForeignKey($this->db->getForeignKeyName('{{%bundles_purchasables}}', 'bundleId'), '{{%bundles_purchasables}}', 'bundleId', '{{%bundles_bundles}}', 'id', 'CASCADE', null);
+		$this->addForeignKey($this->db->getForeignKeyName('{{%bundles_purchasables}}', 'purchasableId'), '{{%bundles_purchasables}}', 'purchasableId', '{{%commerce_purchasables}}', 'id', 'CASCADE', null);
         
         $this->addForeignKey($this->db->getForeignKeyName('{{%bundles_bundletypes}}', 'fieldLayoutId'), '{{%bundles_bundletypes}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
     
@@ -187,7 +188,7 @@ class Install extends Migration
     protected function dropTables()
     {
         $this->dropTableIfExists('{{%bundles_bundles}}');
-        $this->dropTableIfExists('{{%bundles_products}}');
+        $this->dropTableIfExists('{{%bundles_purchasables}}');
         $this->dropTableIfExists('{{%bundles_bundletypes}}');
         $this->dropTableIfExists('{{%bundles_bundletypes_sites}}');
 	}
@@ -195,7 +196,7 @@ class Install extends Migration
 	protected function dropForeignKeys()
     {
 		MigrationHelper::dropAllForeignKeysOnTable('{{%bundles_bundles}}', $this);
-		MigrationHelper::dropAllForeignKeysOnTable('{{%bundles_products}}', $this);
+		MigrationHelper::dropAllForeignKeysOnTable('{{%bundles_purchasables}}', $this);
 		MigrationHelper::dropAllForeignKeysOnTable('{{%bundles_bundletypes}}', $this);
 		MigrationHelper::dropAllForeignKeysOnTable('{{%bundles_bundletypes_sites}}', $this);
 	}

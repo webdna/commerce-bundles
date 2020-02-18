@@ -14,9 +14,10 @@ use kuriousagency\commerce\bundles\Bundles;
 use kuriousagency\commerce\bundles\elements\db\BundleQuery;
 use kuriousagency\commerce\bundles\events\CustomizeBundleSnapshotDataEvent;
 use kuriousagency\commerce\bundles\events\CustomizeBundleSnapshotFieldsEvent;
+use kuriousagency\commerce\bundles\events\CompleteBundleOrderEvent;
 use kuriousagency\commerce\bundles\models\BundleTypeModel;
 use kuriousagency\commerce\bundles\records\BundleRecord;
-use kuriousagency\commerce\bundles\records\BundleProductRecord;
+use kuriousagency\commerce\bundles\records\BundlePurchasableRecord;
 
 use Craft;
 use craft\elements\db\ElementQueryInterface;
@@ -33,6 +34,8 @@ use craft\commerce\models\LineItem;
 use craft\commerce\models\TaxCategory;
 use craft\commerce\models\ShippingCategory;
 use craft\commerce\Plugin as Commerce;
+
+use craft\digitalproducts\Plugin as DigitalProducts;
 
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -54,7 +57,9 @@ class Bundle extends Purchasable
 	const STATUS_EXPIRED = 'expired';	
 	
 	const EVENT_BEFORE_CAPTURE_BUNDLE_SNAPSHOT = 'beforeCaptureBundleSnapshot';
-    const EVENT_AFTER_CAPTURE_BUNDLE_SNAPSHOT = 'afterCaptureBundleSnapshot';
+	const EVENT_AFTER_CAPTURE_BUNDLE_SNAPSHOT = 'afterCaptureBundleSnapshot';
+	
+	const EVENT_AFTER_COMPLETE_BUNDLE_ORDER = 'afterCompleteBundleOrder';
 	
 	
 	// Public Properties
@@ -70,7 +75,9 @@ class Bundle extends Purchasable
 	public $price;
 
     private $_bundleType;
-    private $_products;
+	//private $_products;
+	private $_purchasables;
+	private $_purchasableIds;
     private $_qtys;
 
     // Static Methods
@@ -244,7 +251,7 @@ class Bundle extends Purchasable
     {
         $rules = parent::rules();
 
-        $rules[] = [['typeId', 'sku', 'price','products','qtys'], 'required'];
+        $rules[] = [['typeId', 'sku', 'price','purchasableIds','qtys'], 'required'];
         $rules[] = [['sku'], 'string'];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
@@ -428,7 +435,7 @@ class Bundle extends Purchasable
 
 		$data['fields'] = $bundleDataEvent->fieldData;
 
-		$data['productId'] = $this->id;
+		//$data['productId'] = $this->id;
 
         return array_merge($this->getAttributes(), $data);
     }
@@ -470,50 +477,64 @@ class Bundle extends Purchasable
 
     public function hasStock(): bool
     {
-		
-		$bundleProducts = $this->_getBundleProducts();
-
-		foreach($bundleProducts as $product) {
-			$purchasable = Commerce::getInstance()->getVariants()->getVariantById($product['purchasableId']);
-			if (!$purchasable->hasUnlimitedStock && $product['qty'] > $purchasable->stock) {
-				return false;
-			}
-		}
-		
-		return true;
-    }
+		return $this->getStock() > 0;
+	}
 	
-	public function getProducts()
+	public function getStock()
 	{
-		
-		if (null === $this->_products) {
+		$stock = [];
 
-			$this->_products = [];
+		$qtys = $this->getQtys();
+		
+		foreach($this->getPurchasables() as $purchasable) {	
+			$qty = $qtys[$purchasable->id];
 			
-			$bundleProducts = $this->_getBundleProducts();
+			if (method_exists($purchasable, 'availableQuantity')) {
+				$stock[] = floor($purchasable->availableQuantity() / $qty);
+			}elseif (property_exists($purchasable, 'stock')) {
+				$stock[] = $purchasable->hasUnlimitedStock ? PHP_INT_MAX : floor($purchasable->stock / $qty);
+			}else {
+				// assume not stock or quantity means unlimited
+				$stock[] = PHP_INT_MAX;
+			}
+		}
+		if (count($stock)) {
+			return min($stock);
+		}
 
-			if($bundleProducts) {
-				foreach($bundleProducts as $product) {
-					$this->_products[] = Commerce::getInstance()->getVariants()->getVariantById($product['purchasableId']);
-				}
+		return 0;
+	}
+	
+	public function getPurchasables() {
+		if (null === $this->_purchasables) {
+			foreach ($this->getPurchasableIds() as $id) {
+				$this->_purchasables[] = Craft::$app->getElements()->getElementById($id);
 			}
 		}
 
-		return $this->_products;
+		return $this->_purchasables;
 	}
 
-	public function setProducts($products)
-	{
-		$this->_products = [];
+	public function getPurchasableIds(): array
+    {
+        if (null === $this->_purchasableIds) {
 
-		if(is_array($products)) {
-			foreach($products as $product) {
-				$this->_products[] = Commerce::getInstance()->getVariants()->getVariantById($product);
+			$purchasableIds = [];
+
+			foreach ($this->_getBundlePurchasables() as $row) {
+				$purchasableIds[] = $row['purchasableId'];
 			}
 
-		}
-		
+			$this->_purchasableIds = $purchasableIds;
+        }
+
+        return $this->_purchasableIds;
 	}
+	
+	public function setPurchasableIds(array $purchasableIds)
+    {
+        $this->_purchasableIds = array_unique($purchasableIds);
+    }
 
 	public function getQtys()
 	{
@@ -521,12 +542,8 @@ class Bundle extends Purchasable
 
 			$this->_qtys = [];
 
-			$bundleProducts = $this->_getBundleProducts();
-
-			if($bundleProducts) {
-				foreach($bundleProducts as $product) {
-					$this->_qtys[$product['purchasableId']] = $product['qty'];
-				}
+			foreach($this->_getBundlePurchasables() as $row) {
+				$this->_qtys[$row['purchasableId']] = $row['qty'];
 			}
 		}
 
@@ -535,9 +552,7 @@ class Bundle extends Purchasable
 
 	public function setQtys($qtys)
 	{		
-		
 		$this->_qtys = is_array($qtys) ? $qtys : [];
-
 	}
 
 
@@ -546,14 +561,15 @@ class Bundle extends Purchasable
         $errors = [];
         if ($lineItem->purchasable === $this) {
 
-			$bundleStock = Bundles::$plugin->bundles->getBundleStock($lineItem->purchasable->id);
+			//$bundleStock = Bundles::$plugin->bundles->getBundleStock($lineItem->purchasable->id);
+			$stock = $this->stock;
 
-			if($bundleStock != "unlimited") {
-				if ($lineItem->qty > $bundleStock) {
-					$lineItem->qty = $bundleStock;
+			//if($bundleStock != "unlimited") {
+				if ($lineItem->qty > $stock) {
+					$lineItem->qty = $stock;
 					$errors[] = 'You reached the maximum stock of ' . $lineItem->purchasable->getDescription();
 				}
-			}
+			//}
         }
         if ($errors) {
             $cart = Commerce::getInstance()->getCarts()->getCart();
@@ -569,28 +585,32 @@ class Bundle extends Purchasable
      */
     public function afterOrderComplete(Order $order, LineItem $lineItem)
     {
-		
-		foreach($this->_getBundleProducts() as $product) {
+		$qtys = $this->getQtys();
 
-			$purchasable = Commerce::getInstance()->getVariants()->getVariantById($product['purchasableId']);
+		foreach($this->getPurchasables() as $purchasable) {
 
-			// Don't reduce stock of unlimited items.
-			if (!$purchasable->hasUnlimitedStock) {
-				// Update the qty in the db directly
-				Craft::$app->getDb()->createCommand()->update('{{%commerce_variants}}',
-					['stock' => new Expression('stock - :qty', [':qty' => ($lineItem->qty * $product['qty'])])],
-					['id' => $purchasable->id])->execute();
+			$item = new LineItem();
+			$item->id = $lineItem->id;
+			$item->qty = $lineItem->qty * $qtys[$purchasable->id];
+			$purchasable->afterOrderComplete($order, $item);
 
-				// Update the stock
-				$purchasable->stock = (new Query())
-					->select(['stock'])
-					->from('{{%commerce_variants}}')
-					->where('id = :variantId', [':variantId' => $purchasable->id])
-					->scalar();
-
-				Craft::$app->getTemplateCaches()->deleteCachesByElementId($this->id);
+			//handle digital products
+			if ($purchasable instanceof \craft\digitalproducts\elements\Product) {
+				for ($i = 0; $i < $item->qty; $i++) {
+                    DigitalProducts::getInstance()->getLicenses()->licenseProductByOrder($purchasable, $order);
+                }
 			}
 
+			$event = new CompleteBundleOrderEvent([
+				'bundle' => $this,
+				'order' => $order,
+				'lineItem' => $item,
+			]);
+			
+			// Allow plugins to handle a bundle purchasable
+			if ($this->hasEventHandlers(self::EVENT_AFTER_COMPLETE_BUNDLE_ORDER)) {
+				$this->trigger(self::EVENT_AFTER_COMPLETE_BUNDLE_ORDER, $event);
+			}
 		}
 	}
 	
@@ -691,9 +711,9 @@ class Bundle extends Purchasable
         ];
 	}
 
-	private function _getBundleProducts()
+	private function _getBundlePurchasables()
 	{
-		return $bundleProducts = BundleProductRecord::find()
+		return $purchasables = BundlePurchasableRecord::find()
 			->where(['bundleId' => $this->id])
 			->all();
 	}

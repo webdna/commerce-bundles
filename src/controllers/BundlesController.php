@@ -3,8 +3,8 @@ namespace kuriousagency\commerce\bundles\controllers;
 
 use kuriousagency\commerce\bundles\Bundles;
 use kuriousagency\commerce\bundles\elements\Bundle;
-use kuriousagency\commerce\bundles\models\BundleProductModel;
-use kuriousagency\commerce\bundles\records\BundleProductRecord;
+use kuriousagency\commerce\bundles\models\BundlePurchasableModel;
+use kuriousagency\commerce\bundles\records\BundlePurchasableRecord;
 
 use Craft;
 use craft\base\Element;
@@ -14,6 +14,8 @@ use craft\helpers\Localization;
 use craft\helpers\UrlHelper;
 use craft\models\Site;
 use craft\web\Controller;
+
+use craft\commerce\Plugin as Commerce;
 
 use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
@@ -174,30 +176,34 @@ class BundlesController extends Controller
 
 			Craft::$app->getSession()->setError(Craft::t('commerce-bundles', 'Couldn’t save bundle.'));
 
+			$variables = ['bundle' => $bundle];
+			$this->_prepareVariableArray($variables);
+			//Craft::dd($bundle->getErrors());
             // Send the category back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'bundle' => $bundle
-            ]);
+            Craft::$app->getUrlManager()->setRouteParams($variables);
 
             return null;
 		}
 		
-		$this->deleteAllVariantsByBundleId($bundle->id);
+		$this->deleteAllPurchasablesByBundleId($bundle->id);
 
-		$products = $request->getBodyParam('products');
-		$qtys = $request->getBodyParam('qty');
+		//$products = $request->getBodyParam('products');
+		//$qtys = $request->getBodyParam('qty');
 
-		foreach($products as $product) {
-			$qty = $qtys[$product];
+		foreach ($bundle->getPurchasableIds() as $id) {
+			
+			$purchasable = Craft::$app->getElements()->getElementById($id);
 
-			$bundleProduct = new BundleProductModel;
-			$bundleProduct->bundleId = $bundle->id;
-			$bundleProduct->purchasableId = $product;
-			$bundleProduct->qty = $qty;
+			$bundlePurchasable = new BundlePurchasableModel;
+			$bundlePurchasable->bundleId = $bundle->id;
+			$bundlePurchasable->purchasableId = $id;
+			$bundlePurchasable->purchasableType = get_class($purchasable);
+			$bundlePurchasable->qty = $bundle->qtys[$id];
 
-			$this->saveBundleProducts($bundleProduct);
+			$this->saveBundlePurchasables($bundlePurchasable);
 
 		}
+
 
         if ($request->getAcceptsJson()) {
             return $this->asJson([
@@ -268,24 +274,25 @@ class BundlesController extends Controller
         return null;
 	}
 	
-	public function saveBundleProducts(BundleProductModel $bundleProduct)
+	public function saveBundlePurchasables(BundlePurchasableModel $bundlePurchasable)
 	{
 		
-		$bundleProductRecord = new BundleProductRecord();
-		$bundleProductRecord->bundleId = $bundleProduct->bundleId;
-		$bundleProductRecord->purchasableId = $bundleProduct->purchasableId;
-		$bundleProductRecord->qty = $bundleProduct->qty;
+		$bundlePurchasableRecord = new BundlePurchasableRecord();
+		$bundlePurchasableRecord->bundleId = $bundlePurchasable->bundleId;
+		$bundlePurchasableRecord->purchasableId = $bundlePurchasable->purchasableId;
+		$bundlePurchasableRecord->purchasableType = $bundlePurchasable->purchasableType;
+		$bundlePurchasableRecord->qty = $bundlePurchasable->qty;
 		
-		if (!$bundleProduct->hasErrors()) {
+		if (!$bundlePurchasable->hasErrors()) {
 
             $db = Craft::$app->getDb();
             $transaction = $db->beginTransaction();
 
             try {
-                $success = $bundleProductRecord->save(false);
+                $success = $bundlePurchasableRecord->save(false);
 
                 if ($success) {                    
-                    $bundleProduct->id = $bundleProductRecord->id;
+                    $bundlePurchasable->id = $bundlePurchasableRecord->id;
 
                     $transaction->commit();
                 }
@@ -302,9 +309,9 @@ class BundlesController extends Controller
 
 	}
 
-	public function deleteAllVariantsByBundleId(int $bundleId): bool
+	public function deleteAllPurchasablesByBundleId(int $bundleId): bool
     {
-        return (bool)BundleProductRecord::deleteAll(['bundleId' => $bundleId]);
+        return (bool)BundlePurchasableRecord::deleteAll(['bundleId' => $bundleId]);
     }
 
 
@@ -414,6 +421,32 @@ class BundlesController extends Controller
             foreach (Craft::$app->getSites()->getEditableSiteIds() as $site) {
                 $variables['enabledSiteIds'][] = $site;
             }
+		}
+
+
+		$variables['purchasables'] = null;
+		$purchasables = [];
+		foreach ($variables['bundle']->getPurchasableIds() as $purchasableId) {
+			$purchasable = Craft::$app->getElements()->getElementById((int)$purchasableId);
+            if ($purchasable) {
+                $class = get_class($purchasable);
+                $purchasables[$class] = $purchasables[$class] ?? [];
+                $purchasables[$class][] = $purchasable;
+            }
+        }
+        $variables['purchasables'] = $purchasables;
+		
+		$variables['purchasableTypes'] = [];
+        $purchasableTypes = Commerce::getInstance()->getPurchasables()->getAllPurchasableElementTypes();
+
+        /** @var Purchasable $purchasableType */
+        foreach ($purchasableTypes as $purchasableType) {
+			if ($purchasableType != get_class($variables['bundle'])) {
+				$variables['purchasableTypes'][] = [
+					'name' => $purchasableType::displayName(),
+					'elementType' => $purchasableType
+				];
+			}
         }
     }
 
@@ -473,8 +506,18 @@ class BundlesController extends Controller
 
         $bundle->price = Localization::normalizeNumber($request->getBodyParam('price'));
 		$bundle->sku = $request->getBodyParam('sku');
+
+		$purchasables = [];
+        $purchasableGroups = $request->getBodyParam('purchasables') ?: [];
+        foreach ($purchasableGroups as $group) {
+            if (is_array($group)) {
+                array_push($purchasables, ...$group);
+            }
+        }
+        $purchasables = array_unique($purchasables);
+        $bundle->setPurchasableIds($purchasables);
 		
-		$bundle->products = $request->getBodyParam('products');
+		//$bundle->products = $request->getBodyParam('products');
 		$bundle->qtys = $request->getBodyParam('qty');
 
         if (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) !== null) {

@@ -21,10 +21,10 @@ use yii\db\ActiveQueryInterface;
  * @package   Bundles
  * @since     1.0.0
  */
-class BundleProductRecord extends ActiveRecord
+class BundlePurchasableRecord extends ActiveRecord
 {
     public static function tableName(): string
     {
-        return '{{%bundles_products}}';
+        return '{{%bundles_purchasables}}';
     }
 }

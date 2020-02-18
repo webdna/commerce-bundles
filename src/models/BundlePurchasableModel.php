@@ -20,7 +20,7 @@ use craft\base\Model;
  * @package   Bundles
  * @since     1.0.0
  */
-class BundleProductModel extends Model
+class BundlePurchasableModel extends Model
 {
     // Public Properties
     // =========================================================================
@@ -30,7 +30,8 @@ class BundleProductModel extends Model
      */
     public $id;
     public $bundleId;
-    public $purchasableId;
+	public $purchasableId;
+	public $purchasableType;
     public $qty;
 
     // Public Methods
@@ -48,7 +49,8 @@ class BundleProductModel extends Model
             [
                 [
                     'bundleId',
-                    'purchasableId'
+					'purchasableId',
+					'purchasableType',
                 ], 'required'
             ],
             [['qty'], 'integer', 'min' => 1],

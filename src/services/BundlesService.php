@@ -56,7 +56,7 @@ class BundlesService extends Component
         }
 	}
 
-	public function getBundleStock($bundleId)
+	/*public function getBundleStock($bundleId)
 	{
 
 		$stock = [];
@@ -79,7 +79,7 @@ class BundlesService extends Component
 
 		return $minStock;
 
-	}
+	}*/
 
 	private function _createBundleProductsQuery(): Query
     {
@@ -87,10 +87,11 @@ class BundlesService extends Component
             ->select([
                 'id',
                 'bundleId',
-                'purchasableId',
+				'purchasableId',
+				'purchasableType',
                 'qty',
             ])
-            ->from(['{{%bundles_products}}']);
+            ->from(['{{%bundles_purchasables}}']);
     }
 	
 }
