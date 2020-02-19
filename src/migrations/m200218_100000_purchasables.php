@@ -24,7 +24,7 @@ class m200218_100000_purchasables extends Migration
 			$this->addColumn('{{%bundles_purchasables}}', 'purchasableType', $this->string()->notNull());
 		}
 		
-		MigrationHelper::dropForeignKey('{{%bundles_purchasables}}', 'purchasableId', $this);
+		MigrationHelper::dropForeignKeyIfExists('{{%bundles_purchasables}}', ['purchasableId'], $this);
 		$this->addForeignKey($this->db->getForeignKeyName('{{%bundles_purchasables}}', 'purchasableId'), '{{%bundles_purchasables}}', 'purchasableId', '{{%commerce_purchasables}}', 'id', 'CASCADE', null);
 
 		return true;
