@@ -90,6 +90,21 @@ class Bundle extends Purchasable
     {
         return Craft::t('commerce-bundles', 'Bundle');
 	}
+
+	public static function lowerDisplayName(): string
+	{
+		return Craft::t('commerce-bundles', 'bundle');
+	}
+
+	public static function pluralDisplayName(): string
+	{
+		return Craft::t('commerce-bundles', 'Bundles');
+	}
+
+	public static function pluralLowerDisplayName(): string
+	{
+		return Craft::t('commerce-bundles', 'bundles');
+	}
 	
 	public function __toString(): string
     {
