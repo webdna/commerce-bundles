@@ -20,6 +20,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\db\Query;
 
 use craft\commerce\Plugin as Commerce;
+use craft\commerce\models\LineItem;
 
 /**
  * @author    Kurious Agency
@@ -79,7 +80,12 @@ class BundlesService extends Component
 
 		return $minStock;
 
-	}*/
+    }*/
+    
+    public function isBundle(LineItem $lineItem)
+    {
+        return (bool)(get_class($lineItem->purchasable) === Bundle::class);
+    }
 
 	private function _createBundleProductsQuery(): Query
     {

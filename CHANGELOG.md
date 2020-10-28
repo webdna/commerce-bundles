@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.1.4 - 2020-10-28
+
+### Added
+- link to element index
+- isBundle method - use ```craft.commerceBundles.bundles.isBundle(lineItem)``` to check if a line item is a bundle
+
+### Fixed
+- Composer 2 compatibility fix
+
 ## 1.1.3 - 2020-05-19
 
 ### Added

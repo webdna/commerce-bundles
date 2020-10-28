@@ -667,6 +667,7 @@ class Bundle extends Purchasable
             'slug' => ['label' => Craft::t('commerce-bundles', 'Slug')],
             'sku' => ['label' => Craft::t('commerce-bundles', 'SKU')],
             'price' => ['label' => Craft::t('commerce-bundles', 'Price')],
+            'link' => ['label' => Craft::t('commerce', 'Link'), 'icon' => 'world'],
             'postDate' => ['label' => Craft::t('commerce-bundles', 'Post Date')],
             'expiryDate' => ['label' => Craft::t('commerce-bundles', 'Expiry Date')],
         ];
@@ -682,6 +683,7 @@ class Bundle extends Purchasable
 
         $attributes[] = 'postDate';
         $attributes[] = 'expiryDate';
+        $attributes[] = 'link';
 
         return $attributes;
     }
