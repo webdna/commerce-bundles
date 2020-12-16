@@ -17,215 +17,250 @@ use yii\db\Connection;
 
 class BundleQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
+	// Properties
+	// =========================================================================
 
-    public $editable = false;
-    public $typeId;
-    public $postDate;
-    public $expiryDate;
+	public $editable = false;
+	public $typeId;
+	public $postDate;
+	public $expiryDate;
+	public $purchasableIds;
 
+	// Public Methods
+	// =========================================================================
 
-    // Public Methods
-    // =========================================================================
+	public function __construct(string $elementType, array $config = [])
+	{
+		// Default status
+		if (!isset($config["status"])) {
+			$config["status"] = Bundle::STATUS_LIVE;
+		}
 
-    public function __construct(string $elementType, array $config = [])
-    {
-        // Default status
-        if (!isset($config['status'])) {
-            $config['status'] = Bundle::STATUS_LIVE;
-        }
+		parent::__construct($elementType, $config);
+	}
 
-        parent::__construct($elementType, $config);
-    }
+	public function __set($name, $value)
+	{
+		switch ($name) {
+			case "type":
+				$this->type($value);
+				break;
+			case "before":
+				$this->before($value);
+				break;
+			case "after":
+				$this->after($value);
+				break;
+			default:
+				parent::__set($name, $value);
+		}
+	}
 
-    public function __set($name, $value)
-    {
-        switch ($name) {
-            case 'type':
-                $this->type($value);
-                break;
-            case 'before':
-                $this->before($value);
-                break;
-            case 'after':
-                $this->after($value);
-                break;
-            default:
-                parent::__set($name, $value);
-        }
-    }
+	public function type($value)
+	{
+		if ($value instanceof BundleType) {
+			$this->typeId = $value->id;
+		} elseif ($value !== null) {
+			$this->typeId = (new Query())
+				->select(["id"])
+				->from(["{{%bundles_bundletypes}}"])
+				->where(Db::parseParam("handle", $value))
+				->column();
+		} else {
+			$this->typeId = null;
+		}
 
-    public function type($value)
-    {
-        if ($value instanceof BundleType) {
-            $this->typeId = $value->id;
-        } else if ($value !== null) {
-            $this->typeId = (new Query())
-                ->select(['id'])
-                ->from(['{{%bundles_bundletypes}}'])
-                ->where(Db::parseParam('handle', $value))
-                ->column();
-        } else {
-            $this->typeId = null;
-        }
+		return $this;
+	}
 
-        return $this;
-    }
+	public function before($value)
+	{
+		if ($value instanceof DateTime) {
+			$value = $value->format(DateTime::W3C);
+		}
 
-    public function before($value)
-    {
-        if ($value instanceof DateTime) {
-            $value = $value->format(DateTime::W3C);
-        }
+		$this->postDate = ArrayHelper::toArray($this->postDate);
+		$this->postDate[] = "<" . $value;
 
-        $this->postDate = ArrayHelper::toArray($this->postDate);
-        $this->postDate[] = '<'.$value;
+		return $this;
+	}
 
-        return $this;
-    }
+	public function after($value)
+	{
+		if ($value instanceof DateTime) {
+			$value = $value->format(DateTime::W3C);
+		}
 
-    public function after($value)
-    {
-        if ($value instanceof DateTime) {
-            $value = $value->format(DateTime::W3C);
-        }
+		$this->postDate = ArrayHelper::toArray($this->postDate);
+		$this->postDate[] = ">=" . $value;
 
-        $this->postDate = ArrayHelper::toArray($this->postDate);
-        $this->postDate[] = '>='.$value;
+		return $this;
+	}
 
-        return $this;
-    }
+	public function editable(bool $value = true)
+	{
+		$this->editable = $value;
 
-    public function editable(bool $value = true)
-    {
-        $this->editable = $value;
+		return $this;
+	}
 
-        return $this;
-    }
+	public function typeId($value)
+	{
+		$this->typeId = $value;
 
-    public function typeId($value)
-    {
-        $this->typeId = $value;
+		return $this;
+	}
 
-        return $this;
-    }
+	public function postDate($value)
+	{
+		$this->postDate = $value;
 
-    public function postDate($value)
-    {
-        $this->postDate = $value;
+		return $this;
+	}
 
-        return $this;
-    }
+	public function expiryDate($value)
+	{
+		$this->expiryDate = $value;
 
-    public function expiryDate($value)
-    {
-        $this->expiryDate = $value;
+		return $this;
+	}
 
-        return $this;
-    }
+	public function purchasables($value)
+	{
+		if (!is_array($value)) {
+			$value = [$value];
+		}
 
-    // Protected Methods
-    // =========================================================================
+		foreach ($value as $purchasable) {
+			$this->purchasableIds[] = $purchasable->id;
+		}
 
-    protected function beforePrepare(): bool
-    {
-        // See if 'type' were set to invalid handles
-        if ($this->typeId === []) {
-            return false;
-        }
+		return $this;
+	}
 
-        $this->joinElementTable('bundles_bundles');
+	// Protected Methods
+	// =========================================================================
 
-        $this->query->select([
-            'bundles_bundles.id',
-            'bundles_bundles.typeId',
-            'bundles_bundles.taxCategoryId',
-            'bundles_bundles.shippingCategoryId',
-            'bundles_bundles.postDate',
-            'bundles_bundles.expiryDate',
-            'bundles_bundles.sku',
-            'bundles_bundles.price',
-        ]);
+	protected function beforePrepare(): bool
+	{
+		// See if 'type' were set to invalid handles
+		if ($this->typeId === []) {
+			return false;
+		}
 
-        if ($this->postDate) {
-            $this->subQuery->andWhere(Db::parseDateParam('bundles_bundles.postDate', $this->postDate));
-        }
+		$this->joinElementTable("bundles_bundles");
 
-        if ($this->expiryDate) {
-            $this->subQuery->andWhere(Db::parseDateParam('bundles_bundles.expiryDate', $this->expiryDate));
-        }
+		$this->query->select([
+			"bundles_bundles.id",
+			"bundles_bundles.typeId",
+			"bundles_bundles.taxCategoryId",
+			"bundles_bundles.shippingCategoryId",
+			"bundles_bundles.postDate",
+			"bundles_bundles.expiryDate",
+			"bundles_bundles.sku",
+			"bundles_bundles.price",
+		]);
 
-        if ($this->typeId) {
-            $this->subQuery->andWhere(Db::parseParam('bundles_bundles.typeId', $this->typeId));
-        }
+		if ($this->postDate) {
+			$this->subQuery->andWhere(
+				Db::parseDateParam("bundles_bundles.postDate", $this->postDate)
+			);
+		}
 
-        $this->_applyEditableParam();
+		if ($this->expiryDate) {
+			$this->subQuery->andWhere(
+				Db::parseDateParam(
+					"bundles_bundles.expiryDate",
+					$this->expiryDate
+				)
+			);
+		}
 
-        return parent::beforePrepare();
-    }
+		if ($this->typeId) {
+			$this->subQuery->andWhere(
+				Db::parseParam("bundles_bundles.typeId", $this->typeId)
+			);
+		}
 
-    protected function statusCondition(string $status)
-    {
-        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
+		if ($this->purchasableIds) {
+			$this->subQuery->innerJoin(
+				"bundles_purchasables",
+				"bundles_bundles.id = bundles_purchasables.bundleId"
+			);
+			$this->subQuery->andWhere(
+				Db::parseParam(
+					"bundles_purchasables.purchasableId",
+					$this->purchasableIds
+				)
+			);
+		}
 
-        switch ($status) {
-            case Bundle::STATUS_LIVE:
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => true,
-                        'elements_sites.enabled' => true
-                    ],
-                    ['<=', 'bundles_bundles.postDate', $currentTimeDb],
-                    [
-                        'or',
-                        ['bundles_bundles.expiryDate' => null],
-                        ['>', 'bundles_bundles.expiryDate', $currentTimeDb]
-                    ]
-                ];
-            case Bundle::STATUS_PENDING:
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => true,
-                        'elements_sites.enabled' => true,
-                    ],
-                    ['>', 'bundles_bundles.postDate', $currentTimeDb]
-                ];
-            case Bundle::STATUS_EXPIRED:
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => true,
-                        'elements_sites.enabled' => true
-                    ],
-                    ['not', ['bundles_bundles.expiryDate' => null]],
-                    ['<=', 'bundles_bundles.expiryDate', $currentTimeDb]
-                ];
-            default:
-                return parent::statusCondition($status);
-        }
-    }
+		$this->_applyEditableParam();
 
-    // Private Methods
-    // =========================================================================
+		return parent::beforePrepare();
+	}
 
-    private function _applyEditableParam()
-    {
-        if (!$this->editable) {
-            return;
-        }
+	protected function statusCondition(string $status)
+	{
+		$currentTimeDb = Db::prepareDateForDb(new \DateTime());
 
-        $user = Craft::$app->getUser()->getIdentity();
+		switch ($status) {
+			case Bundle::STATUS_LIVE:
+				return [
+					"and",
+					[
+						"elements.enabled" => true,
+						"elements_sites.enabled" => true,
+					],
+					["<=", "bundles_bundles.postDate", $currentTimeDb],
+					[
+						"or",
+						["bundles_bundles.expiryDate" => null],
+						[">", "bundles_bundles.expiryDate", $currentTimeDb],
+					],
+				];
+			case Bundle::STATUS_PENDING:
+				return [
+					"and",
+					[
+						"elements.enabled" => true,
+						"elements_sites.enabled" => true,
+					],
+					[">", "bundles_bundles.postDate", $currentTimeDb],
+				];
+			case Bundle::STATUS_EXPIRED:
+				return [
+					"and",
+					[
+						"elements.enabled" => true,
+						"elements_sites.enabled" => true,
+					],
+					["not", ["bundles_bundles.expiryDate" => null]],
+					["<=", "bundles_bundles.expiryDate", $currentTimeDb],
+				];
+			default:
+				return parent::statusCondition($status);
+		}
+	}
 
-        if (!$user) {
-            throw new QueryAbortedException();
-        }
+	// Private Methods
+	// =========================================================================
 
-        // Limit the query to only the sections the user has permission to edit
-        $this->subQuery->andWhere([
-            'bundles_bundles.typeId' => Bundles::$plugin->bundleTypes->getEditableBundleTypeIds()
-        ]);
-    }
+	private function _applyEditableParam()
+	{
+		if (!$this->editable) {
+			return;
+		}
+
+		$user = Craft::$app->getUser()->getIdentity();
+
+		if (!$user) {
+			throw new QueryAbortedException();
+		}
+
+		// Limit the query to only the sections the user has permission to edit
+		$this->subQuery->andWhere([
+			"bundles_bundles.typeId" => Bundles::$plugin->bundleTypes->getEditableBundleTypeIds(),
+		]);
+	}
 }
