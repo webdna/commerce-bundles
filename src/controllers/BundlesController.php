@@ -95,24 +95,28 @@ class BundlesController extends Controller
 
         $variables['tabs'] = [];
 
-        foreach ($variables['bundleType']->getFieldLayout()->getTabs() as $index => $tab) {
-            // Do any of the fields on this tab have errors?
-            $hasErrors = false;
+        // foreach ($variables['bundleType']->getFieldLayout()->getTabs() as $index => $tab) {
+        //     // Do any of the fields on this tab have errors?
+        //     $hasErrors = false;
 
-            if ($variables['bundle']->hasErrors()) {
-                foreach ($tab->getFields() as $field) {
-                    if ($hasErrors = $variables['bundle']->hasErrors($field->handle . '.*')) {
-                        break;
-                    }
-                }
-            }
+        //     if ($variables['bundle']->hasErrors()) {
+        //         foreach ($tab->getFields() as $field) {
+        //             if ($hasErrors = $variables['bundle']->hasErrors($field->handle . '.*')) {
+        //                 break;
+        //             }
+        //         }
+        //     }
 
-            $variables['tabs'][] = [
-                'label' => Craft::t('site', $tab->name),
-                'url' => '#' . $tab->getHtmlId(),
-                'class' => $hasErrors ? 'error' : null
-            ];
-        }
+        //     $variables['tabs'][] = [
+        //         'label' => Craft::t('site', $tab->name),
+        //         'url' => '#' . $tab->getHtmlId(),
+        //         'class' => $hasErrors ? 'error' : null
+        //     ];
+        // }
+
+        $form = $bundleType->getBundleFieldLayout()->createForm($bundle);
+        $variables['tabs'] = $form->getTabMenu();
+        $variables['fieldsHtml'] = $form->render();
 
         return $this->renderTemplate('commerce-bundles/bundles/_edit', $variables);
     }

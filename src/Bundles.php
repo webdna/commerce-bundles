@@ -19,6 +19,7 @@ use kuriousagency\commerce\bundles\models\Settings;
 
 use Craft;
 use craft\base\Plugin;
+use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\web\UrlManager;
 use craft\services\Elements;
 use craft\services\Fields;
@@ -28,6 +29,8 @@ use craft\web\twig\variables\CraftVariable;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\fieldlayoutelements\TitleField;
+use craft\models\FieldLayout;
 
 use craft\commerce\services\Purchasables;
 
@@ -153,6 +156,18 @@ class Bundles extends Plugin
                 'commerce-bundles-manageBundleType' => ['label' => Craft::t('commerce-bundles', 'Manage bundle types')],
                 
             ];
+        });
+
+        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_STANDARD_FIELDS, function(DefineFieldLayoutFieldsEvent $e) {
+            /** @var FieldLayout $fieldLayout */
+            $fieldLayout = $e->sender;
+
+            switch ($fieldLayout->type) {
+                case Bundle::class:
+                    $e->fields[] = TitleField::class;
+                    break;
+            }
+            
         });
 		
 		Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->bundleTypes, 'afterSaveSiteHandler']);

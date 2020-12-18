@@ -88,7 +88,7 @@
 {% if bundle.id %}<input type="hidden" name="bundleId" value="{{ bundle.id }}" />{% endif %}
 
 <div id="fields">
-	{{ bundleFields.titleField(bundle) }}
+	{# {{ bundleFields.titleField(bundle) }} #}
 
 {% for purchasableType in purchasableTypes %}
 	{% set id = 'purchasables-'~purchasableType.elementType|id %}
@@ -123,13 +123,14 @@
 	</div>
 {% endfor %}
 
-	<div>
+	{# <div>
 		{% for tab in bundleType.getFieldLayout().getTabs() %}
 		<div id="{{ tab.getHtmlId() }}" {% if not loop.first %} class="hidden" {% endif %}>
 			{% include '_includes/fields' with { fields: tab.getFields(), element: bundle, } only %}
 		</div>
 		{% endfor %}
-	</div>
+	</div> #}
+	{{ fieldsHtml|raw }}
 </div>
 
 {% if not bundle.slug %} {% js %} window.slugGenerator = new Craft.SlugGenerator('#title', '#slug'); {% endjs %} {% endif %} {% endblock %} {% block details %}

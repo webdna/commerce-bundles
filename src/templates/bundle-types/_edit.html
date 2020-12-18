@@ -2,8 +2,8 @@
 {% set selectedSubnavItem = 'bundleTypes' %}
 
 {% set crumbs = [
-    { label: 'Bundle' | t('commerce-bundle'), url: url('commerce-bundle') },
-    { label: 'Bundle Types' | t('commerce-bundle'), url: url('commerce-bundles/bundle-types') },
+    { label: 'Bundle' | t('commerce-bundles'), url: url('commerce-bundle') },
+    { label: 'Bundle Types' | t('commerce-bundles'), url: url('commerce-bundles/bundle-types') },
 ] %}
 
 {% set fullPageForm = true %}
@@ -18,20 +18,19 @@
 
 	{{ forms.textField({
 		first: true,
-		label: 'Name' | t('commerce-bundle'),
-		instructions: 'What this bundle type will be called in the CP.' | t('commerce-bundle'),
+		label: 'Name' | t('commerce-bundles'),
+		instructions: 'What this bundle type will be called in the CP.' | t('commerce-bundles'),
 		id: 'name',
 		name: 'name',
 		value: bundleType.name,
 		errors: bundleType.getErrors('name'),
 		autofocus: true,
-		required: true,
-		translatable: true
+		required: true
 	}) }}
 
 	{{ forms.textField({
-		label: 'Handle' | t('commerce-bundle'),
-		instructions: 'How you’ll refer to this bundle type in the templates.' | t('commerce-bundle'),
+		label: 'Handle' | t('commerce-bundles'),
+		instructions: 'How you’ll refer to this bundle type in the templates.' | t('commerce-bundles'),
 		id: 'handle',
 		class: 'code',
 		name: 'handle',
@@ -41,20 +40,20 @@
 	}) }}
 
 	{{ forms.textField({
-		label: 'Automatic SKU Format' | t('commerce-bundle'),
-		instructions: 'What the unique auto-generated SKUs should look like, when a SKU field is submitted without a value. You can include tags that output properties, such as {ex1} or {ex2}' | t('bundle', { ex1: '<code>{slug}</code>', ex2: '<code>{myCustomField}</code>' }),
+		label: 'Automatic SKU Format' | t('commerce-bundles'),
+        instructions: 'What the unique auto-generated SKUs should look like, when a SKU field is submitted without a value. You can include tags that output properties, such as {ex1} or {ex2}' | t('commerce-bundles', { ex1: '<code>{slug}</code>', ex2: '<code>{myCustomField}</code>' }),
 		id: 'skuFormat',
 		class: 'ltr',
 		name: 'skuFormat',
 		value: bundleType.skuFormat,
 		errors: bundleType.getErrors('skuFormat')
-	}) }}
+    }) }}
 
 	{% macro hasUrlsField(bundleType) %}
 		{% from '_includes/forms' import checkboxField %}
 
 		{{ checkboxField({
-			label: 'Bundles of this type have their own URLs' | t('commerce-bundle'),
+			label: 'Bundles of this type have their own URLs' | t('commerce-bundles'),
 			id: 'hasUrls',
 			name: 'hasUrls',
 			checked: bundleType.hasUrls,
@@ -66,8 +65,8 @@
 		{% from "_includes/forms" import textField %}
 
 		{{ textField({
-			label: 'Bundle Template' | t('commerce-bundle'),
-			instructions: 'The template to use when a bundle’s URL is requested.' | t('commerce-bundle'),
+			label: 'Bundle Template' | t('commerce-bundles'),
+			instructions: 'The template to use when a bundle’s URL is requested.' | t('commerce-bundles'),
 			id: 'template',
 			class: 'ltr',
 			name: 'template',
@@ -139,9 +138,9 @@
 
     <hr>
 
-    {% include '_includes/fieldlayoutdesigner' with {
-        fieldLayout: bundleType.getBundleFieldLayout(),
-    } only %}
+    {{ forms.fieldLayoutDesignerField({
+        fieldLayout: bundleType.getBundleFieldLayout()
+    }) }}
 
 {% endblock %}
 
