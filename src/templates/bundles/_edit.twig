@@ -87,49 +87,39 @@
 <input type="hidden" name="typeId" value="{{ bundleType.id }}" />
 {% if bundle.id %}<input type="hidden" name="bundleId" value="{{ bundle.id }}" />{% endif %}
 
-<div id="fields">
-	{# {{ bundleFields.titleField(bundle) }} #}
-
-{% for purchasableType in purchasableTypes %}
-	{% set id = 'purchasables-'~purchasableType.elementType|id %}
-	<div class="field first" id="{{id}}-field">
-		<div class="heading">
-			<label id="{{id}}-label" class="required" for="{{id}}">Please select the {{purchasableType.name}} and quantities for this bundle</label>
-		</div>
-
-		<input type="hidden" name="purchasables[{{purchasableType.elementType}}]" value="" />
-
-		<div class="flex">
-			<div id="{{id}}-Picker" class="elementselect">
-				<div class="elements">
-					{% for element in purchasables[purchasableType.elementType] ?? [] %} {% include "_elements/element" with { context: 'field', size: 'small', name: 'purchasables['~purchasableType.elementType~']' } %} {% endfor %}
-				</div>
-				<div class="btn add icon dashed">Choose {{purchasableType.name}}</div>
+<div id="fields" class="bundleProducts">
+	{% for purchasableType in purchasableTypes %}
+		{% set id = 'purchasables-'~purchasableType.elementType|id %}
+		<div class="field first" id="{{id}}-field">
+			<div class="heading">
+				<label id="{{id}}-label" class="required" for="{{id}}">Please select the {{purchasableType.name}} and quantities for this bundle</label>
 			</div>
-		</div>
-		{% if bundle.getErrors('purchasables-'~purchasableType.elementType|replace('\\','-')) %}
-		<ul class="errors">
-			{% for error in bundle.getErrors('purchasables-'~purchasableType.elementType|replace('\\','-')) %}
-			<li>{{ error }}</li>
-			{% endfor %}
-		</ul>
-		{% endif %} {% if bundle.getErrors('qtys') %}
-		<ul class="errors">
-			{% for error in bundle.getErrors('qtys') %}
-			<li>{{ error }}</li>
-			{% endfor %}
-		</ul>
-		{% endif %}
-	</div>
-{% endfor %}
 
-	{# <div>
-		{% for tab in bundleType.getFieldLayout().getTabs() %}
-		<div id="{{ tab.getHtmlId() }}" {% if not loop.first %} class="hidden" {% endif %}>
-			{% include '_includes/fields' with { fields: tab.getFields(), element: bundle, } only %}
+			<input type="hidden" name="purchasables[{{purchasableType.elementType}}]" value="" />
+
+			<div class="flex">
+				<div id="{{id}}-Picker" class="elementselect">
+					<div class="elements">
+						{% for element in purchasables[purchasableType.elementType] ?? [] %} {% include "_elements/element" with { context: 'field', size: 'small', name: 'purchasables['~purchasableType.elementType~']' } %} {% endfor %}
+					</div>
+					<div class="btn add icon dashed">Choose {{purchasableType.name}}</div>
+				</div>
+			</div>
+			{% if bundle.getErrors('purchasables-'~purchasableType.elementType|replace('\\','-')) %}
+			<ul class="errors">
+				{% for error in bundle.getErrors('purchasables-'~purchasableType.elementType|replace('\\','-')) %}
+				<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+			{% endif %} {% if bundle.getErrors('qtys') %}
+			<ul class="errors">
+				{% for error in bundle.getErrors('qtys') %}
+				<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+			{% endif %}
 		</div>
-		{% endfor %}
-	</div> #}
+	{% endfor %}
 	{{ fieldsHtml|raw }}
 </div>
 
@@ -207,7 +197,6 @@ var qty = [];
 			$div.append($this.find('.status')); 
 			$div.append($this.find('.label')); 
 			$div.append('<div class="label">Qty: <input type="number" min="1" class="text qty" data-id="'+id+'" name="qty['+id+']" value="'+qty['{{id}}'][id]+'" /></div>'); 
-			{# $div.append($('<input type="number" min="1" class="text qty" data-id="'+id+'" name="qty[{{type}}]['+id+']" value="'+qty[{{id}}][id]+'" />'));  #}
 			$div.append($this.find('.icon')); 
 	}) 
 	new Craft.BaseElementSelectInput({ 
@@ -231,7 +220,7 @@ var qty = [];
 				var $div = $('<div class="flex"></div>').appendTo($el); 
 				$div.append($el.find('.status')); 
 				$div.append($el.find('.label')); 
-				$div.append('<div class="label">Qty: <input type="number" min="1" class="text qty" data-id="'+this.id+'" name="qty['+this.id+']" value="1" /></div>'); 
+				$div.append('<div class="label qty">Qty: <input type="number" min="1" class="text qty" data-id="'+this.id+'" name="qty['+this.id+']" value="1" /></div>'); 
 				$div.append($el.find('.icon')); 
 			}); 
 		}, 

@@ -22,3 +22,27 @@
 	 margin-left: 10px;
 	 width: 100px;
  }
+
+.bundleProducts .elementselect {
+	width: 100%;
+}
+
+.bundleProducts .elementselect .element {
+	width: 100%;
+}
+
+.bundleProducts .elementselect .element .flex > * {
+	margin-bottom: 0;
+}
+
+.bundleProducts .elementselect .element .label:not(.qty) {
+	margin-right: auto !important;
+}
+
+.bundleProducts .elementselect .element .qty {
+	padding-right: 10px !important;
+}
+
+.bundleProducts input[type=number]{
+    width: 80px;
+} 

@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.2 - 2021-01-07
+
+### Added
+
+-   Support for Craft 3.5 new field layout
+
+### Changed
+
+-   Improved the UI for selecting the products and quantites in a bundle
+-   Commcer Bundles now requires Craft 3.5
+
 ## 1.1.7 - 2020-12-16
 
 ### Added
