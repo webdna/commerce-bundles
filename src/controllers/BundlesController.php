@@ -79,6 +79,8 @@ class BundlesController extends Controller
 
         $this->_prepareVariableArray($variables);
 
+        $bundle = $variables['bundle'];
+
         if (!empty($variables['bundle']->id)) {
             $variables['title'] = $variables['bundle']->title;
         } else {
@@ -93,26 +95,7 @@ class BundlesController extends Controller
 
         $this->_livePreview($variables);
 
-        $variables['tabs'] = [];
-
-        // foreach ($variables['bundleType']->getFieldLayout()->getTabs() as $index => $tab) {
-        //     // Do any of the fields on this tab have errors?
-        //     $hasErrors = false;
-
-        //     if ($variables['bundle']->hasErrors()) {
-        //         foreach ($tab->getFields() as $field) {
-        //             if ($hasErrors = $variables['bundle']->hasErrors($field->handle . '.*')) {
-        //                 break;
-        //             }
-        //         }
-        //     }
-
-        //     $variables['tabs'][] = [
-        //         'label' => Craft::t('site', $tab->name),
-        //         'url' => '#' . $tab->getHtmlId(),
-        //         'class' => $hasErrors ? 'error' : null
-        //     ];
-        // }
+        $variables['tabs'] = [];        
 
         $form = $bundleType->getBundleFieldLayout()->createForm($bundle);
         $variables['tabs'] = $form->getTabMenu();
