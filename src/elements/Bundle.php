@@ -116,9 +116,9 @@ class Bundle extends Purchasable
     public float  $price = 0;
 
     private mixed  $_bundleType = null;
-	private array $_purchasables = [];
-	private array $_purchasableIds = [];
-    private array $_qtys = [];
+	private ?array $_purchasables = null;
+	private ?array $_purchasableIds = null;
+    private ?array $_qtys = null;
 
 
 
@@ -616,7 +616,8 @@ class Bundle extends Purchasable
 
 	public function getPurchasableIds(): array
     {
-        if (null === $this->_purchasableIds) {
+
+        if (!isset($this->_purchasableIds)) {
 
 			$purchasableIds = [];
 

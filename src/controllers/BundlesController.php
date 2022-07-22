@@ -457,6 +457,7 @@ class BundlesController extends Controller
 		$variables['purchasables'] = null;
 		$purchasables = [];
 		foreach ($variables['bundle']->getPurchasableIds() as $purchasableId) {
+
 			$purchasable = Craft::$app->getElements()->getElementById((int)$purchasableId);
             if ($purchasable) {
                 $class = get_class($purchasable);
@@ -465,6 +466,8 @@ class BundlesController extends Controller
             }
         }
         $variables['purchasables'] = $purchasables;
+
+
 
 		$variables['purchasableTypes'] = [];
         $purchasableTypes = Commerce::getInstance()->getPurchasables()->getAllPurchasableElementTypes();

@@ -128,7 +128,10 @@
 			<div class="flex">
 				<div id="{{id}}-Picker" class="elementselect">
 					<div class="elements">
-						{% for element in purchasables[purchasableType.elementType] ?? [] %} {% include "_elements/element" with { context: 'field', size: 'small', name: 'purchasables['~purchasableType.elementType~']' } %} {% endfor %}
+						{% for element in purchasables[purchasableType.elementType] ?? [] %}
+{#							{% dd purchasables %}#}
+							{% include "_elements/element" with { context: 'field', size: 'small', name: 'purchasables['~purchasableType.elementType~']' } %}
+						{% endfor %}
 					</div>
 					<div class="btn add icon dashed">Choose {{purchasableType.name}}</div>
 				</div>
