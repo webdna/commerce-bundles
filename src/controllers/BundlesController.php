@@ -6,7 +6,7 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
 use webdna\commerce\bundles\Bundles;
 use webdna\commerce\bundles\elements\Bundle;
-use webdna\commerce\bundles\models\BundlePurchasableModel;
+use webdna\commerce\bundles\models\BundlePurchasableModel as BundlePurchasable;
 use webdna\commerce\bundles\records\BundlePurchasableRecord;
 
 use Craft;
@@ -185,7 +185,7 @@ class BundlesController extends Controller
             $bundle->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!Craft::$app->getElements()->saveElement($bundle)) {
+        if (!Craft::$app->getElements()->saveElement($bundle, true, false)) {
             if ($request->getAcceptsJson()) {
                 return $this->asJson([
                     'success' => false,
@@ -213,7 +213,7 @@ class BundlesController extends Controller
 
 			$purchasable = Craft::$app->getElements()->getElementById($id);
 
-			$bundlePurchasable = new BundlePurchasableModel;
+			$bundlePurchasable = new BundlePurchasable;
 			$bundlePurchasable->bundleId = $bundle->id;
 			$bundlePurchasable->purchasableId = $id;
 			$bundlePurchasable->purchasableType = get_class($purchasable);
@@ -303,7 +303,7 @@ class BundlesController extends Controller
         //return null;
 	}
 
-	public function saveBundlePurchasables(BundlePurchasableModel $bundlePurchasable): bool
+	public function saveBundlePurchasables(BundlePurchasable $bundlePurchasable): bool
     {
 
 		$bundlePurchasableRecord = new BundlePurchasableRecord();

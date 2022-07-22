@@ -25,20 +25,20 @@ class BundlePurchasableModel extends Model
      * @var int|null ID
      */
     public ?int $id = null;
-    public ?int $bundleId;
-	public ?int $purchasableId;
-	public ?string $purchasableType;
-    public ?int $qty;
+    public ?int $bundleId = null;
+	public ?int $purchasableId = null;
+	public ?string $purchasableType = null;
+    public ?int $qty = null;
 
     // Public Methods
     // =========================================================================
 
     /**
-     * @return array
+     * @inheritdoc
      */
-    public function rules() : array
+    protected function defineRules(): array
     {
-        $rules = [
+        return [
             [
                 [
                     'bundleId',
