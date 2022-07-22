@@ -1,5 +1,5 @@
 <?php
-namespace kuriousagency\commerce\bundles\events;
+namespace webdna\commerce\bundles\events;
 
 use yii\base\Event;
 

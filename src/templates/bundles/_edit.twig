@@ -1,31 +1,44 @@
-{% extends '_layouts/cp' %} 
-{% set selectedSubnavItem = 'bundles' %} 
+{% extends "commerce/_layouts/cp" %}
+
+{% set selectedSubnavItem = 'bundles' %}
 {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ "commerceproducts commerceproductsedit bundlesedit" %}
 
-{% set crumbs = [ { label: 'Bundles' | t('commerce-bundles'), url: url('commerce-bundles') }, { label: bundleType.name | t('commerce-bundles'), url: url('commerce-bundles/bundles/' ~ bundleType.handle) }, ] %} 
-{% set fullPageForm = true %} 
-{% set saveShortcutRedirect = continueEditingUrl %} 
-{% set products = craft.products.id(410,413) %} 
-{% import '_includes/forms' as forms %} 
-{% import 'commerce-bundles/bundles/_fields' as bundleFields %} 
+{% set crumbs = [
+	{ label: 'Bundles' | t('commerce-bundles'), url: url('commerce-bundles') },
+	{ label: bundleType.name | t('commerce-bundles'), url: url('commerce-bundles/bundles/' ~ bundleType.handle) },
+] %}
+
+{% set fullPageForm = true %}
+{% set saveShortcutRedirect = continueEditingUrl %}
+
+{#{% set products = craft.products.id(410,413) %}#}
+
+{% import '_includes/forms' as forms %}
+{% import 'commerce-bundles/bundles/_fields' as bundleFields %}
 
 {% block header %}
-{{ block('pageTitle') }}
-{{ block('contextMenu') }}
-<div class="flex-grow"></div>
-
-{% if showPreviewBtn or shareUrl is defined %} {% if showPreviewBtn %}
-<div class="btn livepreviewbtn">{{ 'Live Preview' | t('app') }}</div>
-{% endif %} {% if shareUrl is defined %}
-<a href="{{ shareUrl }}" class="btn sharebtn" target="_blank">{{ 'Share' | t('app') }}</a>
-{% endif %}
-
-<div class="flex-grow"></div>
-{% endif %}
-
-{{ block('actionButton') }}
-{% endblock %} {% block actionButton %}
-<div class="btngroup">
+<div class="flex flex-nowrap">
+	{{ block('pageTitle') }}
+	{{ block('contextMenu') }}
+</div>
+	<div class="flex">
+		{% if showPreviewBtn or shareUrl is defined %}
+			<div class="btngroup">
+				{% if showPreviewBtn %}
+					<div id="preview-btn" class="btn livepreviewbtn">{{ 'Preview'|t('app') }}</div>
+				{% endif %}
+				{% if shareUrl is defined %}
+					<a id="share-btn" href="{{ shareUrl }}" class="btn sharebtn" target="_blank">{{ 'View'|t('app') }}</a>
+				{% endif %}
+			</div>
+		{% endif %}
+		
+		{{ block('actionButton') }}
+	</div>
+{% endblock %}
+	
+	{% block actionButton %}
+		<div id="save-btn-container" class="btngroup submit">
 	<input type="submit" class="btn submit" value="{{ 'Save' | t('commerce-bundles') }}" />
 	<div class="btn submit menubtn"></div>
 	<div class="menu">
@@ -58,11 +71,17 @@
 		{% endif %}
 	</div>
 </div>
-{% endblock %} {% block contextMenu %} {% if craft.app.getIsMultiSite() %}
-<div class="btn menubtn" data-icon="world">{{ bundle.site.name | t('site') }}</div>
+{% endblock %}
+
+{% block contextMenu %}
+	
+	{% if craft.app.getIsMultiSite() %}
+	<div class="btn menubtn sitemenubtn" data-icon="world">{{ bundle.site.name | t('site') }}</div>
 <div class="menu">
 	<ul class="padded">
-		{% for siteId in siteIds %} {% set site = craft.app.sites.getSiteById(siteId) %} {% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
+		{% for siteId in siteIds %}
+			{% set site = craft.app.sites.getSiteById(siteId) %}
+			{% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
 
 		<li>
 			{% if siteId == bundle.siteId %}
@@ -70,9 +89,10 @@
 				<div class="status {{ status }}"></div>
 				{{ site.name | t('site') }}
 			</a>
-			{% else %} {% set url = url('commerce-bundles/bundles/#{bundleTypeHandle}/#{craft.app.request.getSegment(4)}/#{site.handle}') %}
+			{% else %}
+				{% set url = url('commerce-bundles/bundles/#{bundleTypeHandle}/#{craft.app.request.getSegment(4)}/#{site.handle}') %}
 
-			<a href="{{ url }}">
+			<a href="{{ url }}" data-site-id="{{ siteId }}">
 				<div class="status {{ status }}"></div>
 				{{ site.name | t('site') }}
 			</a>
@@ -81,12 +101,18 @@
 		{% endfor %}
 	</ul>
 </div>
-{% endif %} {% endblock %} {% block content %}
-<input type="hidden" name="action" value="commerce-bundles/bundles/save" />
-{{ redirectInput('commerce-bundles/bundles') }}
-<input type="hidden" name="typeId" value="{{ bundleType.id }}" />
-{% if bundle.id %}<input type="hidden" name="bundleId" value="{{ bundle.id }}" />{% endif %}
+{% endif %} {% endblock %}
 
+
+{% block content %}
+	<input type="hidden" name="action" value="commerce-bundles/bundles/save" />
+	<input type="hidden" name="typeId" value="{{ bundleType.id }}" />
+	{% if bundle.id %}<input type="hidden" name="bundleId" value="{{ bundle.id }}" />{% endif %}
+	{% if craft.app.getIsMultiSite() %}
+		<input type="hidden" name="siteId" value="{{ bundle.siteId }}">
+	{% endif %}
+	{{ redirectInput('commerce-bundles/bundles') }}
+	{{ csrfInput() }}
 <div id="fields" class="bundleProducts">
 	{% for purchasableType in purchasableTypes %}
 		{% set id = 'purchasables-'~purchasableType.elementType|id %}
@@ -122,8 +148,10 @@
 	{% endfor %}
 	{{ fieldsHtml|raw }}
 </div>
+	{% hook "cp.commerce.product.edit.content" %}
+{% endblock %}
 
-{% if not bundle.slug %} {% js %} window.slugGenerator = new Craft.SlugGenerator('#title', '#slug'); {% endjs %} {% endif %} {% endblock %} {% block details %}
+{% block details %}
 <div class="meta">
 	{{ bundleFields.generalMetaFields(bundle) }}
 
@@ -144,13 +172,10 @@
 	{% endif %}
 </div>
 
-<hr />
-
 <div class="meta">
 	{{ bundleFields.behavioralMetaFields(bundle) }}
 </div>
 
-<hr />
 
 <div class="meta">
 	{{ bundleFields.generalFields(bundle) }}
@@ -159,12 +184,12 @@
 
 {% hook "cp.commerce.bundle.edit.meta" %}
 
-<hr />
+
 
 {% if bundle.id %}
-<hr />
-
-<div class="meta read-only">
+	
+	
+	<div class="meta">
 	<div class="data">
 		<h5 class="heading">{{ 'Date Created' | t('commerce-bundles') }}</h5>
 		<div class="value">{{ bundle.dateCreated | date('short') }} {{ bundle.dateCreated | time('short') }}</div>
@@ -175,60 +200,63 @@
 		<div class="value">{{ bundle.dateUpdated | date('short') }} {{ bundle.dateUpdated | time('short') }}</div>
 	</div>
 </div>
-{% endif %} {% endblock %} 
-{% js %} 
+	{% hook "cp.commerce.product.edit.details" %}
+{% endif %}
+	{% if not bundle.slug %}
+		{% js %}
+			window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
+		{% endjs %}
+	{% endif %}
+{% endblock %}
+{% js %}
 var elements = [];
 var qty = [];
 {% for purchasableType in purchasableTypes %}
 	{% set id = 'purchasables-'~purchasableType.elementType|id %}
 	{% set type = purchasableType.elementType|replace({'\\':'\\\\'}) %}
-	
-	elements['{{id}}'] = $('#{{id}}-Picker .element'); 
+
+	elements['{{id}}'] = $('#{{id}}-Picker .element');
 	qty['{{id}}'] = { {% for key,qty in bundle.qtys %}
 				{% set value = qty > 0 ? qty : 1 %}
-				{{ key ~ ':' ~ value }}, 
-			{% endfor %} 
-		}; 
+				{{ key ~ ':' ~ value }},
+			{% endfor %}
+		};
 		//console.log(elements['{{id}}'])
-	elements['{{id}}'].each(function(e) { 
-		var $this = $(this), 
-			id = $this.data('id'); 
-		var $div = $('<div class="flex"></div>').appendTo($this); 
-			$div.append($this.find('.status')); 
-			$div.append($this.find('.label')); 
-			$div.append('<div class="label">Qty: <input type="number" min="1" class="text qty" data-id="'+id+'" name="qty['+id+']" value="'+qty['{{id}}'][id]+'" /></div>'); 
-			$div.append($this.find('.icon')); 
-	}) 
-	new Craft.BaseElementSelectInput({ 
-		id: '{{id}}-Picker', 
-		name: 'purchasables[{{type}}]', 
-		elementType: '{{type}}', 
-		sources: null, 
-		criteria: null, 
-		sourceElementId: null, 
-		viewMode: 'list', 
-		limit: null, 
+	elements['{{id}}'].each(function(e) {
+		var $this = $(this),
+			id = $this.data('id');
+		var $div = $('<div class="flex"></div>').appendTo($this);
+			$div.append($this.find('.status'));
+			$div.append($this.find('.label'));
+			$div.append('<div class="label">Qty: <input type="number" min="1" class="text qty" data-id="'+id+'" name="qty['+id+']" value="'+qty['{{id}}'][id]+'" /></div>');
+			$div.append($this.find('.icon'));
+	})
+	new Craft.BaseElementSelectInput({
+		id: '{{id}}-Picker',
+		name: 'purchasables[{{type}}]',
+		elementType: '{{type}}',
+		sources: null,
+		criteria: null,
+		sourceElementId: null,
+		viewMode: 'list',
+		limit: null,
 		editable: false,
-		sortable: false, 
-		selectable: false, 
-		modalStorageKey: null, 
-		fieldId: null, 
-		onSelectElements: function(e) { 
-			$.each(e, function(i) { 
-				console.log(this); 
-				var $el = $('#{{id}}-Picker .element[data-id="'+this.id+'"]'); 
-				var $div = $('<div class="flex"></div>').appendTo($el); 
-				$div.append($el.find('.status')); 
-				$div.append($el.find('.label')); 
-				$div.append('<div class="label qty">Qty: <input type="number" min="1" class="text qty" data-id="'+this.id+'" name="qty['+this.id+']" value="1" /></div>'); 
-				$div.append($el.find('.icon')); 
-			}); 
-		}, 
-	}); 
+		sortable: false,
+		selectable: false,
+		modalStorageKey: null,
+		fieldId: null,
+		onSelectElements: function(e) {
+			$.each(e, function(i) {
+				console.log(this);
+				var $el = $('#{{id}}-Picker .element[data-id="'+this.id+'"]');
+				var $div = $('<div class="flex"></div>').appendTo($el);
+				$div.append($el.find('.status'));
+				$div.append($el.find('.label'));
+				$div.append('<div class="label qty">Qty: <input type="number" min="1" class="text qty" data-id="'+this.id+'" name="qty['+this.id+']" value="1" /></div>');
+				$div.append($el.find('.icon'));
+			});
+		},
+	});
 {% endfor %}
-{% endjs %} 
-{% do view.registerAssetBundle("kuriousagency\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}
-
-
-
-
+{% endjs %}
+{% do view.registerAssetBundle("webdna\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}

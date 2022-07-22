@@ -1,17 +1,15 @@
 <?php
 /**
- * Bundles plugin for Craft CMS 3.x
- *
  * Bundles plugin for Craft Commerce
  *
- * @link      https://kurious.agency
- * @copyright Copyright (c) 2019 Kurious Agency
+ * @link      https://webdna.co.uk
+ * @copyright Copyright (c) 2022 webdna
  */
 
 /**
- * @author    Kurious Agency
+ * @author   webdna
  * @package   Bundles
- * @since     1.0.0
+ * @since     2.0.0
  */
 return [
     'Bundles plugin loaded' => 'Bundles plugin loaded',

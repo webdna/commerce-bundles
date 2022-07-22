@@ -1,9 +1,9 @@
 <?php
-namespace kuriousagency\commerce\bundles\models;
+namespace webdna\commerce\bundles\models;
 
-use kuriousagency\commerce\bundles\Bundles;
-use kuriousagency\commerce\bundles\elements\Bundle;
-use kuriousagency\commerce\bundles\records\BundleTypeRecord;
+use webdna\commerce\bundles\Bundles;
+use webdna\commerce\bundles\elements\Bundle;
+use webdna\commerce\bundles\records\BundleTypeRecord;
 
 use Craft;
 use craft\base\Model;
@@ -13,30 +13,63 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\base\InvalidConfigException;
 
+
+/**
+ *
+ * @property-read string $cpEditUrl
+ * @property array $siteSettings
+ * @property-read FieldLayout $bundleFieldLayout
+ */
 class BundleTypeModel extends Model
 {
-    // Properties
-    // =========================================================================
 
-    public $id;
-    public $name;
-    public $handle;
-    public $skuFormat;
-    public $template;
-    public $fieldLayoutId;
+    /**
+     * @var int|null ID
+     */
+    public ?int $id = null;
 
-    private $_siteSettings;
+    /**
+     * @var string|null Name
+     */
+    public ?string $name = null;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var string|null Handle
+     */
+    public ?string $handle = null;
 
+    /**
+     * @var string|null SKU format
+     */
+    public ?string $skuFormat = null;
+
+    /**
+     * @var string|null Template
+     */
+    public ?string $template = null;
+
+    /**
+     * @var int|null Field layout ID
+     */
+    public ?int $fieldLayoutId = null;
+
+    private ?array $_siteSettings = null;
+
+
+    /**
+     * @return null|string
+     */
     public function __toString()
     {
-        return $this->handle;
+        return (string)$this->handle;
     }
 
-    public function rules()
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
     {
         return [
             [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true],
@@ -54,7 +87,7 @@ class BundleTypeModel extends Model
 
     public function getSiteSettings(): array
     {
-        if ($this->_siteSettings !== null) {
+        if (isset($this->_siteSettings)) {
             return $this->_siteSettings;
         }
 
@@ -67,7 +100,7 @@ class BundleTypeModel extends Model
         return $this->_siteSettings;
     }
 
-    public function setSiteSettings(array $siteSettings)
+    public function setSiteSettings(array $siteSettings): void
     {
         $this->_siteSettings = $siteSettings;
 
@@ -76,10 +109,15 @@ class BundleTypeModel extends Model
         }
     }
 
+    /**
+     * @throws InvalidConfigException
+     */
     public function getBundleFieldLayout(): FieldLayout
     {
+        /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('bundleFieldLayout');
         return $behavior->getFieldLayout();
+
     }
 
     public function behaviors(): array

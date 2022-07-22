@@ -1,11 +1,23 @@
 <?php
-namespace kuriousagency\commerce\bundles\records;
+/**
+ * Bundles plugin for Craft Commerce
+ *
+ * @link      https://webdna.co.uk
+ * @copyright Copyright (c) 2022 webdna
+ */
+
+namespace webdna\commerce\bundles\records;
 
 use craft\db\ActiveRecord;
 use craft\records\Site;
 
 use yii\db\ActiveQueryInterface;
 
+/**
+ *
+ * @property-read ActiveQueryInterface $site
+ * @property-read ActiveQueryInterface $bundleType
+ */
 class BundleTypeSiteRecord extends ActiveRecord
 {
     // Public Methods

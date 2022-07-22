@@ -1,21 +1,18 @@
 {# @var craft \craft\web\twig\variables\CraftVariable #}
 {#
 /**
- * Bundles plugin for Craft CMS 3.x
+ * Bundles plugin for Craft CMS 4.x
  *
  * Bundles Settings.twig
  *
- * @author    Kurious Agency
- * @copyright Copyright (c) 2019 Kurious Agency
- * @link      https://kurious.agency
- * @package   Bundles
- * @since     1.0.0
+ * @link      https://webdna.co.uk
+ * @copyright Copyright (c) 2022 webdna
  */
 #}
 
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
-{% do view.registerAssetBundle("kuriousagency\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}
+{% do view.registerAssetBundle("webdna\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}
 
 {{ forms.textField({
     label: 'Some Field',

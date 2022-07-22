@@ -1,4 +1,4 @@
-{% macro titleField(bundle) %}
+{#{% macro titleField(bundle) %}
 	{%- import '_includes/forms' as forms -%}
 
 	{{ forms.textField({
@@ -14,13 +14,14 @@
 		required: true,
 		maxlength: 255
 	}) }}
-{% endmacro %}
+{% endmacro %}#}
 
 {% macro generalMetaFields(bundle) %}
     {%- import '_includes/forms' as forms -%}
         
     {{ forms.textField({
         label: 'Slug' | t('commerce-bundles'),
+        site: bundle.site,
         id: 'slug',
         name: 'slug',
         value: bundle.slug,

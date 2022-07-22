@@ -1,12 +1,12 @@
 <?php
-namespace kuriousagency\commerce\bundles\services;
+namespace webdna\commerce\bundles\services;
 
-use kuriousagency\commerce\bundles\elements\Bundle;
-// use kuriousagency\commerce\bundles\events\BundleTypeEvent;
-use kuriousagency\commerce\bundles\models\BundleTypeModel;
-use kuriousagency\commerce\bundles\models\BundleTypeSiteModel;
-use kuriousagency\commerce\bundles\records\BundleTypeRecord;
-use kuriousagency\commerce\bundles\records\BundleTypeSiteRecord;
+use webdna\commerce\bundles\elements\Bundle;
+// use webdna\commerce\bundles\events\BundleTypeEvent;
+use webdna\commerce\bundles\models\BundleTypeModel as BundleType;
+use webdna\commerce\bundles\models\BundleTypeSiteModel as BundleTypeSite;
+use webdna\commerce\bundles\records\BundleTypeRecord;
+use webdna\commerce\bundles\records\BundleTypeSiteRecord;
 
 use Craft;
 use craft\db\Query;
@@ -16,7 +16,15 @@ use craft\queue\jobs\ResaveElements;
 
 use yii\base\Component;
 use yii\base\Exception;
+use yii\db\StaleObjectException;
 
+/**
+ *
+ * @property-read array $allBundleTypeIds
+ * @property-read array $editableBundleTypes
+ * @property-read array $editableBundleTypeIds
+ * @property-read array $allBundleTypes
+ */
 class BundleTypesService extends Component
 {
     // Constants
@@ -29,12 +37,12 @@ class BundleTypesService extends Component
     // Properties
     // =========================================================================
 
-    private $_fetchedAllBundleTypes = false;
-    private $_bundleTypesById;
-    private $_bundleTypesByHandle;
-    private $_allBundleTypeIds;
-    private $_editableBundleTypeIds;
-    private $_siteSettingsByBundleId = [];
+    private bool $_fetchedAllBundleTypes = false;
+    private ?array $_bundleTypesById = null;
+    private ?array $_bundleTypesByHandle = null;
+    private ?array $_allBundleTypeIds = null;
+    private ?array $_editableBundleTypeIds = null;
+    private ?array $_siteSettingsByBundleId = [];
 
 
     // Public Methods
@@ -56,14 +64,16 @@ class BundleTypesService extends Component
 
     public function getEditableBundleTypeIds(): array
     {
-        if (null === $this->_editableBundleTypeIds) {
+        if (!isset($this->_editableBundleTypeIds)) {
             $this->_editableBundleTypeIds = [];
             $allBundleTypeIds = $this->getAllBundleTypeIds();
+
 
             foreach ($allBundleTypeIds as $bundleTypeId) {
                 if (Craft::$app->getUser()->checkPermission('commerce-bundles-manageBundleType:' . $bundleTypeId)) {
                     $this->_editableBundleTypeIds[] = $bundleTypeId;
                 }
+
             }
         }
 
@@ -72,7 +82,8 @@ class BundleTypesService extends Component
 
     public function getAllBundleTypeIds(): array
     {
-        if (null === $this->_allBundleTypeIds) {
+
+        if (!isset($this->_allBundleTypeIds)) {
             $this->_allBundleTypeIds = [];
             $bundleTypes = $this->getAllBundleTypes();
 
@@ -90,7 +101,7 @@ class BundleTypesService extends Component
             $results = $this->_createBundleTypeQuery()->all();
 
             foreach ($results as $result) {
-                $this->_memoizeBundleType(new BundleTypeModel($result));
+                $this->_memoizeBundleType(new BundleType($result));
             }
 
             $this->_fetchedAllBundleTypes = true;
@@ -99,7 +110,7 @@ class BundleTypesService extends Component
         return $this->_bundleTypesById ?: [];
     }
 
-    public function getBundleTypeByHandle($handle)
+    public function getBundleTypeByHandle($handle): ?BundleType
     {
         if (isset($this->_bundleTypesByHandle[$handle])) {
             return $this->_bundleTypesByHandle[$handle];
@@ -117,7 +128,7 @@ class BundleTypesService extends Component
             return null;
         }
 
-        $this->_memoizeBundleType(new BundleTypeModel($result));
+        $this->_memoizeBundleType(new BundleType($result));
 
         return $this->_bundleTypesByHandle[$handle];
     }
@@ -141,14 +152,20 @@ class BundleTypesService extends Component
             $this->_siteSettingsByBundleId[$bundleTypeId] = [];
 
             foreach ($rows as $row) {
-                $this->_siteSettingsByBundleId[$bundleTypeId][] = new BundleTypeSiteModel($row);
+                $this->_siteSettingsByBundleId[$bundleTypeId][] = new BundleTypeSite($row);
             }
         }
 
         return $this->_siteSettingsByBundleId[$bundleTypeId];
     }
 
-    public function saveBundleType(BundleTypeModel $bundleType, bool $runValidation = true): bool
+    /**
+     * @throws \Throwable
+     * @throws \yii\db\Exception
+     * @throws Exception
+     * @throws StaleObjectException
+     */
+    public function saveBundleType(BundleType $bundleType, bool $runValidation = true): bool
     {
         $isNewBundleType = !$bundleType->id;
 
@@ -365,12 +382,12 @@ class BundleTypesService extends Component
             return null;
         }
 
-        $this->_memoizeBundleType(new BundleTypeModel($result));
+        $this->_memoizeBundleType(new BundleType($result));
 
         return $this->_bundleTypesById[$bundleTypeId];
     }
 
-    public function isBundleTypeTemplateValid(BundleTypeModel $bundleType, int $siteId): bool
+    public function isBundleTypeTemplateValid(BundleType $bundleType, int $siteId): bool
     {
         $bundleTypeSiteSettings = $bundleType->getSiteSettings();
 
@@ -394,7 +411,7 @@ class BundleTypesService extends Component
         return false;
     }
 
-    public function afterSaveSiteHandler(SiteEvent $event)
+    public function afterSaveSiteHandler(SiteEvent $event): void
     {
         if ($event->isNew) {
             $primarySiteSettings = (new Query())
@@ -427,7 +444,7 @@ class BundleTypesService extends Component
     // Private methods
     // =========================================================================
 
-    private function _memoizeBundleType(BundleTypeModel $bundleType)
+    private function _memoizeBundleType(BundleType $bundleType): void
     {
         $this->_bundleTypesById[$bundleType->id] = $bundleType;
         $this->_bundleTypesByHandle[$bundleType->handle] = $bundleType;

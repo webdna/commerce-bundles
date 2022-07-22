@@ -1,7 +1,7 @@
 <?php
-namespace kuriousagency\commerce\bundles\models;
+namespace webdna\commerce\bundles\models;
 
-use kuriousagency\commerce\bundles\Bundles;
+use webdna\commerce\bundles\Bundles;
 
 use Craft;
 use craft\base\Model;
@@ -9,26 +9,67 @@ use craft\models\Site;
 
 use yii\base\InvalidConfigException;
 
+
+/**
+ *
+ * @property-read Site $site
+ * @property-read BundleTypeModel $bundleType
+ */
 class BundleTypeSiteModel extends Model
 {
-    // Properties
-    // =========================================================================
 
-    public $id;
-    public $bundleTypeId;
-    public $siteId;
-    public $hasUrls;
-    public $uriFormat;
-    public $template;
-    public $uriFormatIsRequired = true;
+    /**
+     * @var int|null ID
+     */
+    public ?int $id = null;
 
-    private $_bundleType;
-    private $_site;
+    /**
+     * @var int Bundle type ID
+     */
+    public int $bundleTypeId;
+
+    /**
+     * @var int Site ID
+     */
+    public int $siteId;
+
+    /**
+     * @var bool Has Urls
+     */
+    public bool $hasUrls = false;
+
+    /**
+     * @var string|null URL Format
+     */
+    public ?string $uriFormat = null;
+
+    /**
+     * @var string|null Template Path
+     */
+    public ?string $template = null;
+
+    /**
+     * @var bool
+     */
+    public bool $uriFormatIsRequired = true;
+
+    /**
+     * @var BundleTypeModel|null
+     */
+    private ?BundleTypeModel $_bundleType;
+
+    /**
+     * @var Site|null
+     */
+    private ?Site $_site = null;
 
 
     // Public Methods
     // =========================================================================
 
+    /**
+     * @throws InvalidConfigException
+     */
     public function getBundleType(): BundleTypeModel
     {
         if ($this->_bundleType !== null) {
@@ -46,7 +87,7 @@ class BundleTypeSiteModel extends Model
         return $this->_bundleType;
     }
 
-    public function setBundleType(BundleTypeModel $bundleType)
+    public function setBundleType(BundleTypeModel $bundleType) : void
     {
         $this->_bundleType = $bundleType;
     }
@@ -56,7 +97,7 @@ class BundleTypeSiteModel extends Model
         if (!$this->_site) {
             $this->_site = Craft::$app->getSites()->getSiteById($this->siteId);
         }
-        
+
         return $this->_site;
     }
 

@@ -1,9 +1,10 @@
 <?php
-namespace kuriousagency\commerce\bundles\elements\db;
+namespace webdna\commerce\bundles\elements\db;
 
-use kuriousagency\commerce\bundles\Bundles;
-use kuriousagency\commerce\bundles\elements\Bundle;
-use kuriousagency\commerce\bundles\models\BundleType;
+use DateTimeInterface;
+use webdna\commerce\bundles\Bundles;
+use webdna\commerce\bundles\elements\Bundle;
+use webdna\commerce\bundles\models\BundleTypeModel;
 
 use Craft;
 use craft\db\Query;
@@ -20,11 +21,11 @@ class BundleQuery extends ElementQuery
 	// Properties
 	// =========================================================================
 
-	public $editable = false;
-	public $typeId;
-	public $postDate;
-	public $expiryDate;
-	public $purchasableIds;
+	public bool $editable = false;
+    public mixed $typeId = null;
+    public mixed $postDate = null;
+    public mixed $expiryDate = null;
+	public array $purchasableIds = [];
 
 	// Public Methods
 	// =========================================================================
@@ -56,9 +57,9 @@ class BundleQuery extends ElementQuery
 		}
 	}
 
-	public function type($value)
-	{
-		if ($value instanceof BundleType) {
+	public function type(mixed $value): static
+    {
+		if ($value instanceof BundleTypeModel) {
 			$this->typeId = $value->id;
 		} elseif ($value !== null) {
 			$this->typeId = (new Query())
@@ -73,10 +74,10 @@ class BundleQuery extends ElementQuery
 		return $this;
 	}
 
-	public function before($value)
-	{
+	public function before(DateTime|string $value): BundleQuery
+    {
 		if ($value instanceof DateTime) {
-			$value = $value->format(DateTime::W3C);
+            $value = $value->format(DateTimeInterface::W3C);
 		}
 
 		$this->postDate = ArrayHelper::toArray($this->postDate);
@@ -85,10 +86,10 @@ class BundleQuery extends ElementQuery
 		return $this;
 	}
 
-	public function after($value)
-	{
+	public function after(DateTime|string $value): BundleQuery
+    {
 		if ($value instanceof DateTime) {
-			$value = $value->format(DateTime::W3C);
+            $value = $value->format(DateTimeInterface::W3C);
 		}
 
 		$this->postDate = ArrayHelper::toArray($this->postDate);
@@ -97,36 +98,36 @@ class BundleQuery extends ElementQuery
 		return $this;
 	}
 
-	public function editable(bool $value = true)
-	{
+	public function editable(bool $value = true): BundleQuery
+    {
 		$this->editable = $value;
 
 		return $this;
 	}
 
-	public function typeId($value)
-	{
+	public function typeId(mixed $value): BundleQuery
+    {
 		$this->typeId = $value;
 
 		return $this;
 	}
 
-	public function postDate($value)
-	{
+	public function postDate(mixed $value): BundleQuery
+    {
 		$this->postDate = $value;
 
 		return $this;
 	}
 
-	public function expiryDate($value)
-	{
+	public function expiryDate(mixed $value): BundleQuery
+    {
 		$this->expiryDate = $value;
 
 		return $this;
 	}
 
-	public function purchasables($value)
-	{
+	public function purchasables(mixed $value): BundleQuery
+    {
 		if (!is_array($value)) {
 			$value = [$value];
 		}
@@ -138,12 +139,16 @@ class BundleQuery extends ElementQuery
 		return $this;
 	}
 
-	// Protected Methods
-	// =========================================================================
 
-	protected function beforePrepare(): bool
+
+    /**
+     * @throws QueryAbortedException
+     */
+    protected function beforePrepare(): bool
 	{
-		// See if 'type' were set to invalid handles
+        $this->_normalizeTypeId();
+
+        // See if 'type' were set to invalid handles
 		if ($this->typeId === []) {
 			return false;
 		}
@@ -200,54 +205,72 @@ class BundleQuery extends ElementQuery
 		return parent::beforePrepare();
 	}
 
-	protected function statusCondition(string $status)
+	protected function statusCondition(string $status) : mixed
 	{
 		$currentTimeDb = Db::prepareDateForDb(new \DateTime());
 
-		switch ($status) {
-			case Bundle::STATUS_LIVE:
-				return [
-					"and",
-					[
-						"elements.enabled" => true,
-						"elements_sites.enabled" => true,
-					],
-					["<=", "bundles_bundles.postDate", $currentTimeDb],
-					[
-						"or",
-						["bundles_bundles.expiryDate" => null],
-						[">", "bundles_bundles.expiryDate", $currentTimeDb],
-					],
-				];
-			case Bundle::STATUS_PENDING:
-				return [
-					"and",
-					[
-						"elements.enabled" => true,
-						"elements_sites.enabled" => true,
-					],
-					[">", "bundles_bundles.postDate", $currentTimeDb],
-				];
-			case Bundle::STATUS_EXPIRED:
-				return [
-					"and",
-					[
-						"elements.enabled" => true,
-						"elements_sites.enabled" => true,
-					],
-					["not", ["bundles_bundles.expiryDate" => null]],
-					["<=", "bundles_bundles.expiryDate", $currentTimeDb],
-				];
-			default:
-				return parent::statusCondition($status);
-		}
+        return match ($status) {
+            Bundle::STATUS_LIVE => [
+                "and",
+                [
+                    "elements.enabled" => true,
+                    "elements_sites.enabled" => true,
+                ],
+                ["<=", "bundles_bundles.postDate", $currentTimeDb],
+                [
+                    "or",
+                    ["bundles_bundles.expiryDate" => null],
+                    [">", "bundles_bundles.expiryDate", $currentTimeDb],
+                ],
+            ],
+            Bundle::STATUS_PENDING => [
+                "and",
+                [
+                    "elements.enabled" => true,
+                    "elements_sites.enabled" => true,
+                ],
+                [">", "bundles_bundles.postDate", $currentTimeDb],
+            ],
+            Bundle::STATUS_EXPIRED => [
+                "and",
+                [
+                    "elements.enabled" => true,
+                    "elements_sites.enabled" => true,
+                ],
+                ["not", ["bundles_bundles.expiryDate" => null]],
+                ["<=", "bundles_bundles.expiryDate", $currentTimeDb],
+            ],
+            default => parent::statusCondition($status),
+        };
 	}
+
+    /**
+     * Normalizes the typeId param to an array of IDs or null
+     */
+    private function _normalizeTypeId(): void
+    {
+        if (empty($this->typeId)) {
+            $this->typeId = null;
+        } elseif (is_numeric($this->typeId)) {
+            $this->typeId = [$this->typeId];
+        } elseif (!is_array($this->typeId) || !ArrayHelper::isNumeric($this->typeId)) {
+            $this->typeId = (new Query())
+                ->select(['id'])
+                ->from(["{{%bundles_bundletypes}}"])
+                ->where(Db::parseParam('id', $this->typeId))
+                ->column();
+        }
+    }
 
 	// Private Methods
 	// =========================================================================
 
-	private function _applyEditableParam()
-	{
+    /**
+     * @throws QueryAbortedException
+     * @throws \Throwable
+     */
+    private function _applyEditableParam(): void
+    {
 		if (!$this->editable) {
 			return;
 		}

@@ -1,4 +1,4 @@
-# Bundles plugin for Craft CMS 3.x
+# Bundles plugin for Craft CMS 4.x
 
 Create a bundle purchasable of existing commerce products.
 
@@ -16,7 +16,7 @@ To install the plugin, follow these instructions.
 
 2. Then tell Composer to load the plugin:
 
-        composer require kuriousagency/commerce-bundles
+        composer require webdna/commerce-bundles
 
 3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Bundles.
 
@@ -96,4 +96,4 @@ Display a list of products and quantities that make up the bundle.
    {{ qty ~ ' x ' ~ craft.variants.id(id).one.description }}
 {% endfor %}
 ```
-Brought to you by [Kurious Agency](https://kurious.agency)
+Brought to you by [webdna](https://webdna.co.uk)

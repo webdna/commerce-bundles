@@ -1,16 +1,14 @@
 <?php
 /**
- * Bundles plugin for Craft CMS 3.x
- *
  * Bundles plugin for Craft Commerce
  *
- * @link      https://kurious.agency
- * @copyright Copyright (c) 2019 Kurious Agency
+ * @link      https://webdna.co.uk
+ * @copyright Copyright (c) 2022 webdna
  */
 
-namespace kuriousagency\commerce\bundles\migrations;
+namespace webdna\commerce\bundles\migrations;
 
-use kuriousagency\commerce\bundles\Bundles;
+use webdna\commerce\bundles\Bundles;
 
 use Craft;
 use craft\config\DbConfig;
@@ -18,9 +16,9 @@ use craft\db\Migration;
 use craft\helpers\MigrationHelper;
 
 /**
- * @author    Kurious Agency
+ * @author   webdna
  * @package   Bundles
- * @since     1.0.0
+ * @since     2.0.0
  */
 class Install extends Migration
 {
@@ -30,7 +28,7 @@ class Install extends Migration
     /**
      * @var string The database driver to use
      */
-    public $driver;
+    public string $driver;
 
     // Public Methods
     // =========================================================================
@@ -70,14 +68,14 @@ class Install extends Migration
     /**
      * @return bool
      */
-    protected function createTables()
+    protected function createTables(): bool
     {
         $tablesCreated = false;
 
         $tableSchema = Craft::$app->db->schema->getTableSchema('{{%bundles_bundles}}');
         if ($tableSchema === null) {
 			$tablesCreated = true;
-			
+
             $this->createTable('{{%bundles_bundles}}', [
 				'id' => $this->primaryKey(),
 				'typeId' => $this->integer(),
@@ -113,7 +111,7 @@ class Install extends Migration
 				'dateUpdated' => $this->dateTime()->notNull(),
 				'uid' => $this->uid(),
 			]);
-	
+
 			$this->createTable('{{%bundles_bundletypes_sites}}', [
 				'id' => $this->primaryKey(),
 				'bundleTypeId' => $this->integer()->notNull(),
@@ -125,8 +123,8 @@ class Install extends Migration
 				'dateUpdated' => $this->dateTime()->notNull(),
 				'uid' => $this->uid(),
 			]);
-			
-			
+
+
 
 
         }
@@ -137,7 +135,7 @@ class Install extends Migration
     /**
      * @return void
      */
-    protected function createIndexes()
+    protected function createIndexes(): void
     {
 		$this->createIndex($this->db->getIndexName('{{%bundles_bundles}}', 'sku', true), '{{%bundles_bundles}}', 'sku', true);
         $this->createIndex($this->db->getIndexName('{{%bundles_bundles}}', 'typeId', false), '{{%bundles_bundles}}', 'typeId', false);
@@ -157,7 +155,7 @@ class Install extends Migration
     /**
      * @return void
      */
-    protected function addForeignKeys()
+    protected function addForeignKeys(): void
     {
 		$this->addForeignKey($this->db->getForeignKeyName('{{%bundles_bundles}}', 'id'), '{{%bundles_bundles}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%bundles_bundles}}', 'shippingCategoryId'), '{{%bundles_bundles}}', 'shippingCategoryId', '{{%commerce_shippingcategories}}', 'id', null, null);
@@ -166,9 +164,9 @@ class Install extends Migration
 
 		$this->addForeignKey($this->db->getForeignKeyName('{{%bundles_purchasables}}', 'bundleId'), '{{%bundles_purchasables}}', 'bundleId', '{{%bundles_bundles}}', 'id', 'CASCADE', null);
 		$this->addForeignKey($this->db->getForeignKeyName('{{%bundles_purchasables}}', 'purchasableId'), '{{%bundles_purchasables}}', 'purchasableId', '{{%commerce_purchasables}}', 'id', 'CASCADE', null);
-        
+
         $this->addForeignKey($this->db->getForeignKeyName('{{%bundles_bundletypes}}', 'fieldLayoutId'), '{{%bundles_bundletypes}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
-    
+
         $this->addForeignKey($this->db->getForeignKeyName('{{%bundles_bundletypes_sites}}', 'siteId'), '{{%bundles_bundletypes_sites}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%bundles_bundletypes_sites}}', 'bundleTypeId'), '{{%bundles_bundletypes_sites}}', 'bundleTypeId', '{{%bundles_bundletypes}}', 'id', 'CASCADE', null);
     }
@@ -178,22 +176,22 @@ class Install extends Migration
     //  */
     // protected function insertDefaultData()
     // {
-		
-		
+
+
     // }
 
     /**
      * @return void
      */
-    protected function dropTables()
+    protected function dropTables(): void
     {
         $this->dropTableIfExists('{{%bundles_bundles}}');
         $this->dropTableIfExists('{{%bundles_purchasables}}');
         $this->dropTableIfExists('{{%bundles_bundletypes}}');
         $this->dropTableIfExists('{{%bundles_bundletypes_sites}}');
 	}
-	
-	protected function dropForeignKeys()
+
+	protected function dropForeignKeys(): void
     {
 		MigrationHelper::dropAllForeignKeysOnTable('{{%bundles_bundles}}', $this);
 		MigrationHelper::dropAllForeignKeysOnTable('{{%bundles_purchasables}}', $this);

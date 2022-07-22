@@ -1,23 +1,21 @@
 <?php
 /**
- * Bundles plugin for Craft CMS 3.x
- *
  * Bundles plugin for Craft Commerce
  *
- * @link      https://kurious.agency
- * @copyright Copyright (c) 2019 Kurious Agency
+ * @link      https://webdna.co.uk
+ * @copyright Copyright (c) 2022 webdna
  */
 
-namespace kuriousagency\commerce\bundles\assetbundles\indexcpsection;
+namespace webdna\commerce\bundles\assetbundles\indexcpsection;
 
 use Craft;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
- * @author    Kurious Agency
+ * @author   webdna
  * @package   Bundles
- * @since     1.0.0
+ * @since     2.0.0
  */
 class IndexCPSectionAsset extends AssetBundle
 {
@@ -27,9 +25,9 @@ class IndexCPSectionAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init() : void
     {
-        $this->sourcePath = "@kuriousagency/commerce-bundles/assetbundles/indexcpsection/dist";
+        $this->sourcePath = "@webdna/commerce-bundles/assetbundles/indexcpsection/dist";
 
         $this->depends = [
             CpAsset::class,

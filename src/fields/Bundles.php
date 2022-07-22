@@ -1,7 +1,7 @@
 <?php
-namespace kuriousagency\commerce\bundles\fields;
+namespace webdna\commerce\bundles\fields;
 
-use kuriousagency\commerce\bundles\elements\Bundle;
+use webdna\commerce\bundles\elements\Bundle;
 
 use Craft;
 use craft\fields\BaseRelationField;
@@ -16,7 +16,7 @@ class Bundles extends BaseRelationField
         return Craft::t('commerce-bundles', 'Bundles');
     }
 
-    protected static function elementType(): string
+    public static function elementType(): string
     {
         return Bundle::class;
     }

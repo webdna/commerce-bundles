@@ -1,10 +1,13 @@
 <?php
-namespace kuriousagency\commerce\bundles\controllers;
+namespace webdna\commerce\bundles\controllers;
 
-use kuriousagency\commerce\bundles\Bundles;
-use kuriousagency\commerce\bundles\elements\Bundle;
-use kuriousagency\commerce\bundles\models\BundlePurchasableModel;
-use kuriousagency\commerce\bundles\records\BundlePurchasableRecord;
+use craft\commerce\base\Purchasable;
+use craft\errors\ElementNotFoundException;
+use craft\errors\MissingComponentException;
+use webdna\commerce\bundles\Bundles;
+use webdna\commerce\bundles\elements\Bundle;
+use webdna\commerce\bundles\models\BundlePurchasableModel;
+use webdna\commerce\bundles\records\BundlePurchasableRecord;
 
 use Craft;
 use craft\base\Element;
@@ -18,6 +21,8 @@ use craft\web\Controller;
 use craft\commerce\Plugin as Commerce;
 
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -29,13 +34,20 @@ class BundlesController extends Controller
     // Properties
     // =========================================================================
 
-    protected $allowAnonymous = [];
+    protected int|bool|array $allowAnonymous = [];
+
+
+
 
 
     // Public Methods
     // =========================================================================
 
-    public function init()
+    /**
+     * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
+     */
+    public function init(): void
     {
         $this->requirePermission('commerce-bundles-manageBundles');
 
@@ -47,6 +59,10 @@ class BundlesController extends Controller
         return $this->renderTemplate('commerce-bundles/bundles/index');
     }
 
+    /**
+     * @throws Exception
+     * @throws ForbiddenHttpException
+     */
     public function actionEdit(string $bundleTypeHandle, int $bundleId = null, string $siteHandle = null, Bundle $bundle = null): Response
     {
 		$bundleType = null;
@@ -95,7 +111,7 @@ class BundlesController extends Controller
 
         $this->_livePreview($variables);
 
-        $variables['tabs'] = [];        
+        $variables['tabs'] = [];
 
         $form = $bundleType->getBundleFieldLayout()->createForm($bundle);
         $variables['tabs'] = $form->getTabMenu();
@@ -104,7 +120,14 @@ class BundlesController extends Controller
         return $this->renderTemplate('commerce-bundles/bundles/_edit', $variables);
     }
 
-    public function actionDeleteBundle()
+    /**
+     * @throws \Throwable
+     * @throws MissingComponentException
+     * @throws Exception
+     * @throws HttpException
+     * @throws BadRequestHttpException
+     */
+    public function actionDeleteBundle(): ?Response
     {
         $this->requirePostRequest();
 
@@ -139,7 +162,16 @@ class BundlesController extends Controller
         return $this->redirectToPostedUrl($bundle);
     }
 
-    public function actionSave()
+    /**
+     * @throws ElementNotFoundException
+     * @throws MissingComponentException
+     * @throws ForbiddenHttpException
+     * @throws HttpException
+     * @throws BadRequestHttpException
+     * @throws \Throwable
+     * @throws Exception
+     */
+    public function actionSave(): ?Response
     {
         $this->requirePostRequest();
 
@@ -171,14 +203,14 @@ class BundlesController extends Controller
 
             return null;
 		}
-		
+
 		$this->deleteAllPurchasablesByBundleId($bundle->id);
 
 		//$products = $request->getBodyParam('products');
 		//$qtys = $request->getBodyParam('qty');
 
 		foreach ($bundle->getPurchasableIds() as $id) {
-			
+
 			$purchasable = Craft::$app->getElements()->getElementById($id);
 
 			$bundlePurchasable = new BundlePurchasableModel;
@@ -208,6 +240,12 @@ class BundlesController extends Controller
         return $this->redirectToPostedUrl($bundle);
     }
 
+    /**
+     * @throws Exception
+     * @throws HttpException
+     * @throws ServerErrorHttpException
+     * @throws BadRequestHttpException
+     */
     public function actionPreviewBundle(): Response
     {
 
@@ -220,6 +258,10 @@ class BundlesController extends Controller
         return $this->_showBundle($bundle);
     }
 
+    /**
+     * @throws HttpException
+     * @throws ForbiddenHttpException
+     */
     public function actionShareBundle($bundleId, $siteId): Response
     {
         $bundle = Bundles::getInstance()->bundles->getBundleById($bundleId, $siteId);
@@ -246,7 +288,7 @@ class BundlesController extends Controller
         return $this->redirect($url);
     }
 
-    public function actionViewSharedBundle($bundleId, $site = null)
+    public function actionViewSharedBundle($bundleId, $site = null) : void
     {
         $this->requireToken();
 
@@ -258,18 +300,18 @@ class BundlesController extends Controller
 
         $this->_showBundle($bundle);
 
-        return null;
+        //return null;
 	}
-	
-	public function saveBundlePurchasables(BundlePurchasableModel $bundlePurchasable)
-	{
-		
+
+	public function saveBundlePurchasables(BundlePurchasableModel $bundlePurchasable): bool
+    {
+
 		$bundlePurchasableRecord = new BundlePurchasableRecord();
 		$bundlePurchasableRecord->bundleId = $bundlePurchasable->bundleId;
 		$bundlePurchasableRecord->purchasableId = $bundlePurchasable->purchasableId;
 		$bundlePurchasableRecord->purchasableType = $bundlePurchasable->purchasableType;
 		$bundlePurchasableRecord->qty = $bundlePurchasable->qty;
-		
+
 		if (!$bundlePurchasable->hasErrors()) {
 
             $db = Craft::$app->getDb();
@@ -278,7 +320,7 @@ class BundlesController extends Controller
             try {
                 $success = $bundlePurchasableRecord->save(false);
 
-                if ($success) {                    
+                if ($success) {
                     $bundlePurchasable->id = $bundlePurchasableRecord->id;
 
                     $transaction->commit();
@@ -292,7 +334,7 @@ class BundlesController extends Controller
         }
 
         return false;
-			
+
 
 	}
 
@@ -305,7 +347,7 @@ class BundlesController extends Controller
     // Protected Methods
     // =========================================================================
 
-    protected function enforceBundlePermissions(Bundle $bundle)
+    protected function enforceBundlePermissions(Bundle $bundle): void
     {
         if (!$bundle->getType()) {
             Craft::error('Attempting to access a bundle that doesn’t have a type', __METHOD__);
@@ -352,7 +394,7 @@ class BundlesController extends Controller
         ]);
     }
 
-    private function _prepareVariableArray(&$variables)
+    private function _prepareVariableArray(&$variables): void
     {
         // Locale related checks
         if (Craft::$app->getIsMultiSite()) {
@@ -399,9 +441,10 @@ class BundlesController extends Controller
             }
         }
 
+
         // Enable locales
-        if ($variables['bundle']->id) {
-            $variables['enabledSiteIds'] = Craft::$app->getElements()->getEnabledSiteIdsForElement($variables['bundle']->id);
+        if (!isset($variables['bundle']->id)) {
+            $variables['enabledSiteIds'] = Craft::$app->getElements()->getEnabledSiteIdsForElement(!isset($variables['bundle']->id));
         } else {
             $variables['enabledSiteIds'] = [];
 
@@ -422,7 +465,7 @@ class BundlesController extends Controller
             }
         }
         $variables['purchasables'] = $purchasables;
-		
+
 		$variables['purchasableTypes'] = [];
         $purchasableTypes = Commerce::getInstance()->getPurchasables()->getAllPurchasableElementTypes();
 
@@ -437,7 +480,7 @@ class BundlesController extends Controller
         }
     }
 
-    private function _livePreview(array &$variables)
+    private function _livePreview(array &$variables): void
     {
         if (!Craft::$app->getRequest()->isMobileBrowser(true) && Bundles::$plugin->bundleTypes->isBundleTypeTemplateValid($variables['bundleType'], $variables['site']->id)) {
             $this->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
@@ -503,14 +546,14 @@ class BundlesController extends Controller
         }
         $purchasables = array_unique($purchasables);
         $bundle->setPurchasableIds($purchasables);
-		
+
 		//$bundle->products = $request->getBodyParam('products');
 		$bundle->qtys = $request->getBodyParam('qty');
 
         if (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) !== null) {
             $bundle->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
         }
-        
+
         if (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) !== null) {
             $bundle->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }

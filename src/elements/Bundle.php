@@ -1,23 +1,22 @@
 <?php
 /**
- * Bundles plugin for Craft CMS 3.x
- *
  * Bundles plugin for Craft Commerce
  *
- * @link      https://kurious.agency
- * @copyright Copyright (c) 2019 Kurious Agency
+ * @link      https://webdna.co.uk
+ * @copyright Copyright (c) 2022 webdna
  */
 
-namespace kuriousagency\commerce\bundles\elements;
+namespace webdna\commerce\bundles\elements;
 
-use kuriousagency\commerce\bundles\Bundles;
-use kuriousagency\commerce\bundles\elements\db\BundleQuery;
-use kuriousagency\commerce\bundles\events\CustomizeBundleSnapshotDataEvent;
-use kuriousagency\commerce\bundles\events\CustomizeBundleSnapshotFieldsEvent;
-use kuriousagency\commerce\bundles\events\CompleteBundleOrderEvent;
-use kuriousagency\commerce\bundles\models\BundleTypeModel;
-use kuriousagency\commerce\bundles\records\BundleRecord;
-use kuriousagency\commerce\bundles\records\BundlePurchasableRecord;
+use craft\models\FieldLayout;
+use webdna\commerce\bundles\Bundles;
+use webdna\commerce\bundles\elements\db\BundleQuery;
+use webdna\commerce\bundles\events\CustomizeBundleSnapshotDataEvent;
+use webdna\commerce\bundles\events\CustomizeBundleSnapshotFieldsEvent;
+use webdna\commerce\bundles\events\CompleteBundleOrderEvent;
+use webdna\commerce\bundles\models\BundleTypeModel;
+use webdna\commerce\bundles\records\BundleRecord;
+use webdna\commerce\bundles\records\BundlePurchasableRecord;
 
 use Craft;
 use craft\elements\db\ElementQueryInterface;
@@ -27,7 +26,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\validators\DateTimeValidator;
-
 use craft\commerce\base\Purchasable;
 use craft\commerce\elements\Order;
 use craft\commerce\models\LineItem;
@@ -37,51 +35,92 @@ use craft\commerce\Plugin as Commerce;
 
 use craft\digitalproducts\Plugin as DigitalProducts;
 
+use DateTime;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 
 /**
- * @author    Kurious Agency
+ * @author   webdna
  * @package   Bundles
- * @since     1.0.0
+ * @since     2.0.0
+ *
+ *
+ * @property array $purchasableIds
+ * @property-read ShippingCategory $shippingCategory
+ * @property-read mixed $product
+ * @property array $qtys
+ * @property-read null|string $type
+ * @property-read TaxCategory $taxCategory
+ * @property-read int $purchasableId
+ * @property-read bool $isEditable
+ * @property-read array $purchasables
+ * @property-read null|string $name
+ * @property-read array $statuses
+ * @property-read int $stock
  */
 class Bundle extends Purchasable
 {
-	
+
 	 // Constants
     // =========================================================================
 
-    const STATUS_LIVE = 'live';
-    const STATUS_PENDING = 'pending';
-	const STATUS_EXPIRED = 'expired';	
-	
-	const EVENT_BEFORE_CAPTURE_BUNDLE_SNAPSHOT = 'beforeCaptureBundleSnapshot';
-	const EVENT_AFTER_CAPTURE_BUNDLE_SNAPSHOT = 'afterCaptureBundleSnapshot';
-	
-	const EVENT_AFTER_COMPLETE_BUNDLE_ORDER = 'afterCompleteBundleOrder';
-	
-	
-	// Public Properties
-    // =========================================================================
+    public const STATUS_LIVE = 'live';
+    public const STATUS_PENDING = 'pending';
+	public const STATUS_EXPIRED = 'expired';
 
-    public $id;
-    public $typeId;
-    public $taxCategoryId;
-    public $shippingCategoryId;
-    public $postDate;
-    public $expiryDate;
-    public $sku;
-	public $price;
+	public const EVENT_BEFORE_CAPTURE_BUNDLE_SNAPSHOT = 'beforeCaptureBundleSnapshot';
+	public const EVENT_AFTER_CAPTURE_BUNDLE_SNAPSHOT = 'afterCaptureBundleSnapshot';
 
-    private $_bundleType;
-	//private $_products;
-	private $_purchasables;
-	private $_purchasableIds;
-    private $_qtys;
+	public const EVENT_AFTER_COMPLETE_BUNDLE_ORDER = 'afterCompleteBundleOrder';
 
-    // Static Methods
-    // =========================================================================
+
+
+
+    public ?int $id = null;
+
+
+    /**
+     * @var int|null Bundle type ID
+     */
+    public ?int $typeId = null;
+
+    /**
+     * @var int|null Tax category ID
+     */
+    public ?int $taxCategoryId = null;
+
+    /**
+     * @var int|null Shipping category ID
+     */
+    public ?int $shippingCategoryId = null;
+
+    /**
+     * @var DateTime|null Post date
+     */
+    public ?DateTime $postDate = null;
+
+    /**
+     * @var DateTime|null Expiry date
+     */
+    public ?DateTime $expiryDate = null;
+
+    /**
+     * @var string|null SKU
+     */
+    public ?string $sku = null;
+
+    /**
+     * @var float|0 Price
+     */
+    public float  $price = 0;
+
+    private mixed  $_bundleType = null;
+	private array $_purchasables = [];
+	private array $_purchasableIds = [];
+    private array $_qtys = [];
+
+
 
     /**
      * @inheritdoc
@@ -91,27 +130,39 @@ class Bundle extends Purchasable
         return Craft::t('commerce-bundles', 'Bundle');
 	}
 
-	public static function lowerDisplayName(): string
-	{
+    /**
+     * @inheritdoc
+     */
+    public static function lowerDisplayName(): string
+    {
 		return Craft::t('commerce-bundles', 'bundle');
 	}
 
-	public static function pluralDisplayName(): string
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
 	{
 		return Craft::t('commerce-bundles', 'Bundles');
 	}
 
-	public static function pluralLowerDisplayName(): string
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
 	{
 		return Craft::t('commerce-bundles', 'bundles');
 	}
-	
-	public function __toString(): string
+
+    /**
+     * @inheritdoc
+     */
+    public function __toString(): string
     {
         return (string)$this->title;
     }
 
-    public function getName()
+    public function getName(): ?string
     {
         return $this->title;
     }
@@ -130,14 +181,20 @@ class Bundle extends Purchasable
     public static function hasTitles(): bool
     {
         return true;
-	}
-	
-	public static function hasUris(): bool
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasUris(): bool
     {
         return true;
-	}
-	
-	public static function hasStatuses(): bool
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasStatuses(): bool
     {
         return true;
     }
@@ -148,7 +205,7 @@ class Bundle extends Purchasable
     public static function isLocalized(): bool
     {
         return true;
-    }  
+    }
 
 	public static function defineSources(string $context = null): array
     {
@@ -197,7 +254,7 @@ class Bundle extends Purchasable
 
         return $sources;
 	}
-	
+
 	protected static function defineActions(string $source = null): array
     {
         $actions = [];
@@ -210,7 +267,7 @@ class Bundle extends Purchasable
 
         return $actions;
 	}
-	
+
 	public function getStatuses(): array
     {
         return [
@@ -220,33 +277,22 @@ class Bundle extends Purchasable
             self::STATUS_DISABLED => Craft::t('commerce-bundles', 'Disabled')
         ];
 	}
-	
-	// public function getEditorHtml(): string
-    // {
-    //     $viewService = Craft::$app->getView();
-    //     $html = $viewService->renderTemplateMacro('bundles/_fields', 'titleField', [$this]);
-    //     $html .= parent::getEditorHtml();
-    //     $html .= $viewService->renderTemplateMacro('bundles/_fields', 'generalFields', [$this]);
-    //     $html .= $viewService->renderTemplateMacro('bundles/_fields', 'pricingFields', [$this]);
-    //     $html .= $viewService->renderTemplateMacro('bundles/_fields', 'behavioralMetaFields', [$this]);
-    //     $html .= $viewService->renderTemplateMacro('bundles/_fields', 'generalMetaFields', [$this]);
 
-    //     return $html;
-	// }
+
 
 	public function getIsAvailable(): bool
     {
         return $this->getStatus() === static::STATUS_LIVE;
 	}
-	
-	public function getStatus()
+
+	public function getStatus(): ?string
     {
         $status = parent::getStatus();
 
         if ($status === self::STATUS_ENABLED && $this->postDate) {
             $currentTime = DateTimeHelper::currentTimeStamp();
             $postDate = $this->postDate->getTimestamp();
-            $expiryDate = $this->expiryDate ? $this->expiryDate->getTimestamp() : null;
+            $expiryDate = $this->expiryDate?->getTimestamp();
 
             if ($postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime)) {
                 return self::STATUS_LIVE;
@@ -261,31 +307,34 @@ class Bundle extends Purchasable
 
         return $status;
 	}
-	
-	public function rules(): array
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        return array_merge(parent::defineRules(), [
 
-        $rules[] = [['typeId', 'sku', 'price','purchasableIds','qtys'], 'required'];
-        $rules[] = [['sku'], 'string'];
-        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
+        [['typeId', 'sku', 'price','purchasableIds','qtys'], 'required'],
+        [['sku'], 'string'],
+        [['postDate', 'expiryDate'], DateTimeValidator::class],
 
-        return $rules;
+        ]);
 	}
-	
+
 	public static function find(): ElementQueryInterface
     {
         return new BundleQuery(static::class);
 	}
-	
-	public function datetimeAttributes(): array
+
+	/*public function datetimeAttributes(): array
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'postDate';
         $attributes[] = 'expiryDate';
 
         return $attributes;
-    }
+    }*/
 
     public function getIsEditable(): bool
     {
@@ -297,31 +346,43 @@ class Bundle extends Purchasable
 
         return false;
 	}
-	
-	public function getCpEditUrl()
+
+	public function getCpEditUrl(): ?string
     {
         $bundleType = $this->getType();
 
-        if ($bundleType) {
-            return UrlHelper::cpUrl('commerce-bundles/bundles/' . $bundleType->handle . '/' . $this->id);
-        }
 
-        return null;
+
+        $url = UrlHelper::cpUrl('commerce-bundles/bundles/' . $bundleType->handle . '/' . $this->id);
+
+
+//        if (Craft::$app->getIsMultiSite()) {
+//            $url .= '/' . $this->getSite()->handle;
+//        }
+
+        return $url;
 	}
-	
-	public function getProduct()
+
+	public function getProduct() : Bundle
     {
         return $this;
     }
 
-    public function getFieldLayout()
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): ?FieldLayout
     {
-        $bundleType = $this->getType();
 
+
+        $bundleType = $this->getType();
         return $bundleType ? $bundleType->getBundleFieldLayout() : null;
 	}
 
-	public function getUriFormat()
+    /**
+     * @inheritdoc
+     */
+    public function getUriFormat(): ?string
     {
         $bundleTypeSiteSettings = $this->getType()->getSiteSettings();
 
@@ -331,8 +392,8 @@ class Bundle extends Purchasable
 
         return $bundleTypeSiteSettings[$this->siteId]->uriFormat;
     }
-	
-	public function getType()
+
+	public function getType() : mixed
     {
         if ($this->_bundleType) {
             return $this->_bundleType;
@@ -340,23 +401,36 @@ class Bundle extends Purchasable
 
         return $this->typeId ? $this->_bundleType = Bundles::$plugin->bundleTypes->getBundleTypeById($this->typeId) : null;
 	}
-	
-	public function getTaxCategory()
+
+    /**
+     * Returns the tax category.
+     *
+     * @throws InvalidConfigException
+     */
+    public function getTaxCategory(): TaxCategory
     {
+        $taxCategory = null;
+
         if ($this->taxCategoryId) {
-            return Commerce::getInstance()->getTaxCategories()->getTaxCategoryById($this->taxCategoryId);
+            $taxCategory = Commerce::getInstance()->getTaxCategories()->getTaxCategoryById($this->taxCategoryId);
         }
 
-        return null;
+        return $taxCategory;
 	}
-	
-	public function getShippingCategory()
+
+    /**
+     * Returns the shipping category.
+     *
+     * @throws InvalidConfigException
+     */
+    public function getShippingCategory(): ShippingCategory
     {
+        $shippingCategory = null;
         if ($this->shippingCategoryId) {
-            return Commerce::getInstance()->getShippingCategories()->getShippingCategoryById($this->shippingCategoryId);
+            $shippingCategory = Commerce::getInstance()->getShippingCategories()->getShippingCategoryById($this->shippingCategoryId);
         }
 
-        return null;
+        return $shippingCategory;
     }
 
     // Events
@@ -366,25 +440,32 @@ class Bundle extends Purchasable
     {
         if ($this->enabled && !$this->postDate) {
             // Default the post date to the current date/time
-            $this->postDate = DateTimeHelper::currentUTCDateTime();
+            $this->postDate = new DateTime();
+            // ...without the seconds
+            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
         }
 
         return parent::beforeSave($isNew);
     }
 
-	public function afterSave(bool $isNew)
+    /**
+     * @inheritdoc
+     */
+    public function afterSave(bool $isNew): void
     {
-        if (!$isNew) {
-            $bundleRecord = BundleRecord::findOne($this->id);
+        if (!$this->propagating) {
+            if (!$isNew) {
+                $bundleRecord = BundleRecord::findOne($this->id);
 
-            if (!$bundleRecord) {
-                throw new Exception('Invalid bundle id: '.$this->id);
+                if (!$bundleRecord) {
+                    throw new Exception('Invalid bundle id: ' . $this->id);
+                }
+            } else {
+                $bundleRecord = new BundleRecord();
+                $bundleRecord->id = $this->id;
             }
-        } else {
-            $bundleRecord = new BundleRecord();
-            $bundleRecord->id = $this->id;
         }
-        
+
         $bundleRecord->postDate = $this->postDate;
         $bundleRecord->expiryDate = $this->expiryDate;
         $bundleRecord->typeId = $this->typeId;
@@ -407,9 +488,9 @@ class Bundle extends Purchasable
 
         $bundleRecord->save(false);
 
-        return parent::afterSave($isNew);
+        parent::afterSave($isNew);
 	}
-	
+
 	    // Implement Purchasable
     // =========================================================================
 
@@ -417,7 +498,7 @@ class Bundle extends Purchasable
     {
         return $this->id;
     }
-    
+
     public function getSnapshot(): array
     {
         $data = [];
@@ -455,7 +536,7 @@ class Bundle extends Purchasable
         return array_merge($this->getAttributes(), $data);
     }
 
-    public function getPrice(): float
+    public function getPrice() : float
     {
         return $this->price;
     }
@@ -485,25 +566,20 @@ class Bundle extends Purchasable
         return true;
     }
 
-    public function getIsPromotable(): bool
-    {
-        return true;
-	}
-
     public function hasStock(): bool
     {
 		return $this->getStock() > 0;
 	}
-	
+
 	public function getStock()
 	{
 		$stock = [];
 
 		$qtys = $this->getQtys();
-		
-		foreach($this->getPurchasables() as $purchasable) {	
+
+		foreach($this->getPurchasables() as $purchasable) {
 			$qty = $qtys[$purchasable->id];
-			
+
 			if (method_exists($purchasable, 'availableQuantity')) {
 				$stock[] = floor($purchasable->availableQuantity() / $qty);
 			}elseif (property_exists($purchasable, 'stock')) {
@@ -520,14 +596,15 @@ class Bundle extends Purchasable
 		return 0;
 	}
 
-	public function getProducts()
-	{
+	public function getProducts(): array
+    {
 		Craft::$app->getDeprecator()->log('Bundle::getProducts()', 'Bundle::getProducts() has been deprecated. Use Bundle::getPurchasables() instead');
 
 		return $this->getPurchasables();
 	}
-	
-	public function getPurchasables() {
+
+	public function getPurchasables(): array
+    {
 		if (null === $this->_purchasables) {
 			foreach ($this->getPurchasableIds() as $id) {
 				$this->_purchasables[] = Craft::$app->getElements()->getElementById($id);
@@ -552,14 +629,14 @@ class Bundle extends Purchasable
 
         return $this->_purchasableIds;
 	}
-	
-	public function setPurchasableIds(array $purchasableIds)
+
+	public function setPurchasableIds(array $purchasableIds): void
     {
         $this->_purchasableIds = array_unique($purchasableIds);
     }
 
-	public function getQtys()
-	{
+	public function getQtys(): array
+    {
 		if (null === $this->_qtys) {
 
 			$this->_qtys = [];
@@ -573,12 +650,12 @@ class Bundle extends Purchasable
 	}
 
 	public function setQtys($qtys)
-	{		
+	{
 		$this->_qtys = is_array($qtys) ? $qtys : [];
 	}
 
 
-	public function populateLineItem(LineItem $lineItem)
+	public function populateLineItem(LineItem $lineItem) : void
     {
         $errors = [];
         if ($lineItem->purchasable === $this) {
@@ -599,13 +676,13 @@ class Bundle extends Purchasable
             Craft::$app->getSession()->setError(implode(',', $errors));
         }
     }
-	
+
 	 /**
      * Updates Stock count from completed order.
      *
      * @inheritdoc
      */
-    public function afterOrderComplete(Order $order, LineItem $lineItem)
+    public function afterOrderComplete(Order $order, LineItem $lineItem) : void
     {
 		$qtys = $this->getQtys();
 
@@ -628,19 +705,23 @@ class Bundle extends Purchasable
 				'order' => $order,
 				'lineItem' => $item,
 			]);
-			
+
 			// Allow plugins to handle a bundle purchasable
 			if ($this->hasEventHandlers(self::EVENT_AFTER_COMPLETE_BUNDLE_ORDER)) {
 				$this->trigger(self::EVENT_AFTER_COMPLETE_BUNDLE_ORDER, $event);
 			}
 		}
 	}
-	
+
 	// Protected methods
     // =========================================================================
 
-    protected function route()
+    protected function route(): array|string|null
     {
+        // Make sure that the product is actually live
+        if (!$this->previewing && $this->getStatus() != self::STATUS_LIVE) {
+            return null;
+        }
         // Make sure the bundle type is set to have URLs for this site
         $siteId = Craft::$app->getSites()->currentSite->id;
         $bundleTypeSiteSettings = $this->getType()->getSiteSettings();
@@ -735,11 +816,11 @@ class Bundle extends Purchasable
         ];
 	}
 
-	private function _getBundlePurchasables()
-	{
-		return $purchasables = BundlePurchasableRecord::find()
-			->where(['bundleId' => $this->id])
-			->all();
+	private function _getBundlePurchasables(): array
+    {
+        return BundlePurchasableRecord::find()
+            ->where(['bundleId' => $this->id])
+            ->all();
 	}
 
     // /**
