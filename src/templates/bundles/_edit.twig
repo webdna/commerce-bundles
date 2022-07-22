@@ -1,3 +1,5 @@
+{# @var bundle \webdna\commerce\bundles\elements\Bundle #}
+
 {% extends "commerce/_layouts/cp" %}
 
 {% set selectedSubnavItem = 'bundles' %}
@@ -10,8 +12,34 @@
 
 {% set fullPageForm = true %}
 {% set saveShortcutRedirect = continueEditingUrl %}
+{% do view.setIsDeltaRegistrationActive(true) %}
 
-{#{% set products = craft.products.id(410,413) %}#}
+{% set formActions = [
+	{
+		label: 'Save and continue editing'|t('commerce-bundles'),
+		redirect: continueEditingUrl|hash,
+		shortcut: true,
+		retainScroll: true,
+	}
+] %}
+
+{% if bundle.id %}
+	{% set formActions = formActions|push({
+		redirect: continueEditingUrl|hash,
+		label: 'Save as a new bundle'|t('commerce-bundles'),
+		
+	}) %}
+	
+	{% set formActions = formActions|push({
+		action: 'commerce-bundles/bundles/delete',
+		confirm: 'Are you sure you want to delete this bundle?'|t('commerce-bundles'),
+		redirect: 'commerce-bundles/bundles'|hash,
+		label: 'Delete'|t('commerce-bundles'),
+		destructive: true,
+	}) %}
+	
+	
+{% endif %}
 
 {% import '_includes/forms' as forms %}
 {% import 'commerce-bundles/bundles/_fields' as bundleFields %}
@@ -36,73 +64,47 @@
 		{{ block('actionButton') }}
 	</div>
 {% endblock %}
-	
-	{% block actionButton %}
-		<div id="save-btn-container" class="btngroup submit">
-	<input type="submit" class="btn submit" value="{{ 'Save' | t('commerce-bundles') }}" />
-	<div class="btn submit menubtn"></div>
-	<div class="menu">
-		<ul>
-			<li>
-				<a class="formsubmit" data-redirect="{{ continueEditingUrl | hash }}">
-					{{ 'Save and continue editing' | t('commerce-bundles') }}
-					{{ forms.optionShortcutLabel('S') }}
-				</a>
-			</li>
-
-			{% if bundle.id %}
-			<li>
-				<a class="formsubmit" data-param="bundleId" data-value="" data-redirect="{{ continueEditingUrl | hash }}">
-					{{ 'Save as a new bundle' | t('commerce-bundles') }}
-				</a>
-			</li>
-			{% endif %}
-		</ul>
-
-		{% if bundle.id %}
-		<hr />
-		<ul>
-			<li>
-				<a class="formsubmit error" data-action="commerce-bundles/bundles/delete" data-confirm="{{ 'Are you sure you want to delete this bundle?' | t('commerce-bundles') }}" data-redirect="{{ 'commerce-bundles/bundles' | hash }}">
-					{{ 'Delete' | t('commerce-bundles') }}
-				</a>
-			</li>
-		</ul>
-		{% endif %}
-	</div>
-</div>
-{% endblock %}
 
 {% block contextMenu %}
 	
 	{% if craft.app.getIsMultiSite() %}
-	<div class="btn menubtn sitemenubtn" data-icon="world">{{ bundle.site.name | t('site') }}</div>
-<div class="menu">
-	<ul class="padded">
-		{% for siteId in siteIds %}
-			{% set site = craft.app.sites.getSiteById(siteId) %}
-			{% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
-
-		<li>
-			{% if siteId == bundle.siteId %}
-			<a class="sel">
-				<div class="status {{ status }}"></div>
-				{{ site.name | t('site') }}
-			</a>
-			{% else %}
-				{% set url = url('commerce-bundles/bundles/#{bundleTypeHandle}/#{craft.app.request.getSegment(4)}/#{site.handle}') %}
-
-			<a href="{{ url }}" data-site-id="{{ siteId }}">
-				<div class="status {{ status }}"></div>
-				{{ site.name | t('site') }}
-			</a>
-			{% endif %}
-		</li>
-		{% endfor %}
-	</ul>
+		<div class="btn menubtn sitemenubtn" data-icon="world">{{ bundle.site.name | t('site') }}</div>
+		<div class="menu">
+			<ul class="padded">
+				{% for siteId in siteIds %}
+					{% set site = craft.app.sites.getSiteById(siteId) %}
+					{% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
+					
+					<li>
+						{% if siteId == bundle.siteId %}
+							<a class="sel">
+								<div class="status {{ status }}"></div>
+								{{ site.name | t('site') }}
+							</a>
+						{% else %}
+							{% set url = url('commerce-bundles/bundles/#{bundleTypeHandle}/#{craft.app.request.getSegment(4)}/#{site.handle}') %}
+							
+							<a href="{{ url }}" data-site-id="{{ siteId }}">
+								<div class="status {{ status }}"></div>
+								{{ site.name | t('site') }}
+							</a>
+						{% endif %}
+					</li>
+				{% endfor %}
+			</ul>
+		</div>
+	{% endif %}
+{% endblock %}
+	
+{% block actionButton %}
+	<div id="save-btn-container" class="btngroup submit">
+		<button type="submit" class="btn submit">{{ 'Save'|t('commerce-bundles') }}</button>
+		{% if formActions|length %}
+		<button type="button" class="btn submit menubtn" aria-lable="{{ 'Actions'|t('commerce-bundles') }}"></button>
+			{% include '_layouts/components/form-action-menu' %}
+		{% endif %}
 </div>
-{% endif %} {% endblock %}
-
+{% endblock %}
 
 {% block content %}
 	<input type="hidden" name="action" value="commerce-bundles/bundles/save" />
@@ -156,19 +158,19 @@
 	{{ bundleFields.generalMetaFields(bundle) }}
 
 	{{ forms.lightswitchField({
-            label: 'Enabled' | t('commerce-bundles'),
-            id: 'enabled',
-            name: 'enabled',
-            on: bundle.enabled
-        }) }}
+		label: 'Enabled' | t('commerce-bundles'),
+		id: 'enabled',
+		name: 'enabled',
+		on: bundle.enabled
+	}) }}
 
 	{% if craft.app.getIsMultiSite() %}
-	{{ forms.lightswitchField({
-                label: 'Enabled for site' | t('commerce-bundles'),
-                id: 'enabledForSite',
-                name: 'enabledForSite',
-                on: bundle.enabledForSite
-            }) }}
+		{{ forms.lightswitchField({
+			label: 'Enabled for site' | t('commerce-bundles'),
+			id: 'enabledForSite',
+			name: 'enabledForSite',
+			on: bundle.enabledForSite
+		}) }}
 	{% endif %}
 </div>
 
@@ -176,42 +178,40 @@
 	{{ bundleFields.behavioralMetaFields(bundle) }}
 </div>
 
-
 <div class="meta">
 	{{ bundleFields.generalFields(bundle) }}
 	{% hook "cp.commerce.bundle.edit.price" %}
 </div>
 
-{% hook "cp.commerce.bundle.edit.meta" %}
-
-
 
 {% if bundle.id %}
-	
-	
 	<div class="meta">
-	<div class="data">
-		<h5 class="heading">{{ 'Date Created' | t('commerce-bundles') }}</h5>
-		<div class="value">{{ bundle.dateCreated | date('short') }} {{ bundle.dateCreated | time('short') }}</div>
+		<div class="data">
+			<h5 class="heading">{{ 'Date Created' | t('commerce-bundles') }}</h5>
+			<div class="value">{{ bundle.dateCreated | date('short') }} {{ bundle.dateCreated | time('short') }}</div>
+		</div>
+		<div class="data">
+			<h5 class="heading">{{ 'Date Updated' | t('commerce-bundles') }}</h5>
+			<div class="value">{{ bundle.dateUpdated | date('short') }} {{ bundle.dateUpdated | time('short') }}</div>
+		</div>
 	</div>
-
-	<div class="data">
-		<h5 class="heading">{{ 'Date Updated' | t('commerce-bundles') }}</h5>
-		<div class="value">{{ bundle.dateUpdated | date('short') }} {{ bundle.dateUpdated | time('short') }}</div>
-	</div>
-</div>
 	{% hook "cp.commerce.product.edit.details" %}
 {% endif %}
-	{% if not bundle.slug %}
-		{% js %}
-			window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
-		{% endjs %}
-	{% endif %}
+
 {% endblock %}
+
+{% if not bundle.slug %}
+	{% js %}
+		window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
+	{% endjs %}
+{% endif %}
+
 {% js %}
 var elements = [];
 var qty = [];
+
 {% for purchasableType in purchasableTypes %}
+	
 	{% set id = 'purchasables-'~purchasableType.elementType|id %}
 	{% set type = purchasableType.elementType|replace({'\\':'\\\\'}) %}
 
