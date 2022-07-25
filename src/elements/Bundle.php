@@ -356,9 +356,9 @@ class Bundle extends Purchasable
         $url = UrlHelper::cpUrl('commerce-bundles/bundles/' . $bundleType->handle . '/' . $this->id);
 
 
-//        if (Craft::$app->getIsMultiSite()) {
-//            $url .= '/' . $this->getSite()->handle;
-//        }
+        if (Craft::$app->getIsMultiSite()) {
+            $url .= '/' . $this->getSite()->handle;
+        }
 
         return $url;
 	}
@@ -453,7 +453,7 @@ class Bundle extends Purchasable
      */
     public function afterSave(bool $isNew): void
     {
-        if (!$this->propagating) {
+
             if (!$isNew) {
                 $bundleRecord = BundleRecord::findOne($this->id);
 
@@ -464,7 +464,7 @@ class Bundle extends Purchasable
                 $bundleRecord = new BundleRecord();
                 $bundleRecord->id = $this->id;
             }
-        }
+
 
         $bundleRecord->postDate = $this->postDate;
         $bundleRecord->expiryDate = $this->expiryDate;
@@ -473,6 +473,10 @@ class Bundle extends Purchasable
         $bundleRecord->taxCategoryId = $this->taxCategoryId;
         $bundleRecord->shippingCategoryId = $this->shippingCategoryId;
         $bundleRecord->price = $this->price;
+
+        // We want to always have the same date as the element table, based on the logic for updating these in the element service i.e resaving
+        $bundleRecord->dateUpdated = $this->dateUpdated;
+        $bundleRecord->dateCreated = $this->dateCreated;
 
         // Generate SKU if empty
         if (empty($this->sku)) {
