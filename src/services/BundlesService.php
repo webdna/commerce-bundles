@@ -34,6 +34,26 @@ class BundlesService extends Component
         return Craft::$app->getElements()->getElementById($id, Bundle::class, $siteId);
     }
 
+    public function afterSaveSiteHandler(SiteEvent $event) : void
+    {
+        $queue = Craft::$app->getQueue();
+        $siteId = $event->oldPrimarySiteId;
+        $elementTypes = [
+            Bundle::class,
+        ];
+
+        foreach ($elementTypes as $elementType) {
+            $queue->push(new ResaveElements([
+                'elementType' => $elementType,
+                'criteria' => [
+                    'siteId' => $siteId,
+                    'status' => null,
+                    'enabledForSite' => false
+                ]
+            ]));
+        }
+    }
+
     /*public function getBundleStock($bundleId)
     {
 

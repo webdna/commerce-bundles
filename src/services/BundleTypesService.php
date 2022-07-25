@@ -304,7 +304,7 @@ class BundleTypesService extends Component
                             'siteId' => $siteId,
                             'typeId' => $bundleType->id,
                             'status' => null,
-                            'enabledForSite' => false,
+                            //'enabledForSite' => false,
                         ]
                     ]));
                 }

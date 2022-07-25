@@ -25,7 +25,7 @@ class BundleQuery extends ElementQuery
     public mixed $typeId = null;
     public mixed $postDate = null;
     public mixed $expiryDate = null;
-	public array $purchasableIds = [];
+	public ?array $purchasableIds = null;
 
 	// Public Methods
 	// =========================================================================
@@ -142,7 +142,7 @@ class BundleQuery extends ElementQuery
 
 
     /**
-     * @throws QueryAbortedException
+     * @throws QueryAbortedException|\Throwable
      */
     protected function beforePrepare(): bool
 	{
