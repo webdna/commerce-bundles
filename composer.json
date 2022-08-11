@@ -1,8 +1,8 @@
 {
-	"name": "kuriousagency/commerce-bundles",
+	"name": "webdna/commerce-bundles",
 	"description": "Bundles plugin for Craft Commerce",
 	"type": "craft-plugin",
-	"version": "1.2.2",
+	"version": "2.0.0-beta.1",
 	"keywords": [
 		"craft",
 		"cms",
@@ -22,12 +22,12 @@
 		}
 	],
 	"require": {
-		"craftcms/cms": "^3.5.0",
-		"craftcms/commerce": "^2.0|^3.0"
+		"craftcms/cms": "^4.0",
+		"craftcms/commerce": "^4.0"
 	},
 	"autoload": {
 		"psr-4": {
-			"kuriousagency\\commerce\\bundles\\": "src/"
+			"webdna\\commerce\\bundles\\": "src/"
 		}
 	},
 	"extra": {
@@ -37,8 +37,8 @@
 		"hasCpSection": true,
 		"changelogUrl": "https://raw.githubusercontent.com/webdna/commerce-bundles/master/CHANGELOG.md",
 		"components": {
-			"bundlesService": "kuriousagency\\commerce\\bundles\\services\\BundlesService"
+			"bundlesService": "webdna\\commerce\\bundles\\services\\BundlesService"
 		},
-		"class": "kuriousagency\\commerce\\bundles\\Bundles"
+		"class": "webdna\\commerce\\bundles\\Bundles"
 	}
 }

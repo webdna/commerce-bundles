@@ -1,9 +1,9 @@
 <?php
-namespace kuriousagency\commerce\bundles\models;
+namespace webdna\commerce\bundles\models;
 
-use kuriousagency\commerce\bundles\Bundles;
-use kuriousagency\commerce\bundles\elements\Bundle;
-use kuriousagency\commerce\bundles\records\BundleTypeRecord;
+use webdna\commerce\bundles\Bundles;
+use webdna\commerce\bundles\elements\Bundle;
+use webdna\commerce\bundles\records\BundleTypeRecord;
 
 use Craft;
 use craft\base\Model;
@@ -19,14 +19,14 @@ class BundleTypeModel extends Model
     // Properties
     // =========================================================================
 
-    public $id;
-    public $name;
-    public $handle;
-    public $skuFormat;
-    public $template;
-    public $fieldLayoutId;
+    public ?int $id = null;
+    public string $name = '';
+    public string $handle = '';
+    public string $skuFormat = '';
+    public string $template = '';
+    public ?int $fieldLayoutId = null;
 
-    private $_siteSettings;
+    private ?array $_siteSettings = null;
 
     // Public Methods
     // =========================================================================
@@ -36,7 +36,7 @@ class BundleTypeModel extends Model
         return $this->handle;
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
             [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true],
@@ -67,7 +67,7 @@ class BundleTypeModel extends Model
         return $this->_siteSettings;
     }
 
-    public function setSiteSettings(array $siteSettings)
+    public function setSiteSettings(array $siteSettings): void
     {
         $this->_siteSettings = $siteSettings;
 

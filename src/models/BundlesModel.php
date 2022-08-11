@@ -4,19 +4,19 @@
  *
  * Bundles plugin for Craft Commerce
  *
- * @link      https://kurious.agency
- * @copyright Copyright (c) 2019 Kurious Agency
+ * @link      https://webdna.co.uk
+ * @copyright Copyright (c) 2019 webdna
  */
 
-namespace kuriousagency\commerce\bundles\models;
+namespace webdna\commerce\bundles\models;
 
-use kuriousagency\commerce\bundles\Bundles;
+use webdna\commerce\bundles\Bundles;
 
 use Craft;
 use craft\base\Model;
 
 /**
- * @author    Kurious Agency
+ * @author    webdna
  * @package   Bundles
  * @since     1.0.0
  */
@@ -28,7 +28,7 @@ class BundlesModel extends Model
     /**
      * @var string
      */
-    public $someAttribute = 'Some Default';
+    public string $someAttribute = 'Some Default';
 
     // Public Methods
     // =========================================================================
@@ -36,7 +36,7 @@ class BundlesModel extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             ['someAttribute', 'string'],

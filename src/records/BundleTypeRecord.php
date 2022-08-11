@@ -1,5 +1,5 @@
 <?php
-namespace kuriousagency\commerce\bundles\records;
+namespace webdna\commerce\bundles\records;
 
 use craft\db\ActiveRecord;
 use craft\records\FieldLayout;

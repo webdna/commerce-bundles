@@ -4,18 +4,18 @@
  *
  * Bundles plugin for Craft Commerce
  *
- * @link      https://kurious.agency
- * @copyright Copyright (c) 2019 Kurious Agency
+ * @link      https://webdna.co.uk
+ * @copyright Copyright (c) 2019 webdna
  */
 
-namespace kuriousagency\commerce\bundles;
+namespace webdna\commerce\bundles;
 
-use kuriousagency\commerce\bundles\services\BundlesService;
-use kuriousagency\commerce\bundles\services\BundleTypesService;
-use kuriousagency\commerce\bundles\variables\BundlesVariable;
-use kuriousagency\commerce\bundles\elements\Bundle;
-use kuriousagency\commerce\bundles\fields\Bundles as BundlesField;
-use kuriousagency\commerce\bundles\models\Settings;
+use webdna\commerce\bundles\services\BundlesService;
+use webdna\commerce\bundles\services\BundleTypesService;
+use webdna\commerce\bundles\variables\BundlesVariable;
+use webdna\commerce\bundles\elements\Bundle;
+use webdna\commerce\bundles\fields\Bundles as BundlesField;
+use webdna\commerce\bundles\models\Settings;
 
 use Craft;
 use craft\base\Plugin;
@@ -39,7 +39,7 @@ use yii\base\Event;
 /**
  * Class Bundles
  *
- * @author    Kurious Agency
+ * @author    webdna
  * @package   Bundles
  * @since     1.0.0
  *
@@ -53,7 +53,7 @@ class Bundles extends Plugin
     /**
      * @var Bundles
      */
-    public static $plugin;
+    public static Plugin $plugin;
 
     // Public Properties
     // =========================================================================
@@ -61,7 +61,7 @@ class Bundles extends Plugin
     /**
      * @var string
      */
-    public $schemaVersion = '1.1.1';
+    public string $schemaVersion = '1.1.1';
 
     // Public Methods
     // =========================================================================
@@ -69,12 +69,12 @@ class Bundles extends Plugin
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
-		self::$plugin = $this;
-		
-		$this->setComponents([
+        self::$plugin = $this;
+
+        $this->setComponents([
             'bundles' => BundlesService::class,
             'bundleTypes' => BundleTypesService::class,
         ]);
@@ -91,16 +91,16 @@ class Bundles extends Plugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-				$event->rules = array_merge($event->rules, [
-					'commerce-bundles/bundle-types/new' => 'commerce-bundles/bundle-types/edit',
-					'commerce-bundles/bundle-types/<bundleTypeId:\d+>' => 'commerce-bundles/bundle-types/edit',
-					
-					'commerce-bundles/bundles/<bundleTypeHandle:{handle}>' => 'commerce-bundles/bundles/index',
-					'commerce-bundles/bundles/<bundleTypeHandle:{handle}>/new' => 'commerce-bundles/bundles/edit',
-					'commerce-bundles/bundles/<bundleTypeHandle:{handle}>/new/<siteHandle:\w+>' => 'commerce-bundles/bundles/edit',
-					'commerce-bundles/bundles/<bundleTypeHandle:{handle}>/<bundleId:\d+>' => 'commerce-bundles/bundles/edit',
-					'commerce-bundles/bundles/<bundleTypeHandle:{handle}>/<bundleId:\d+>/<siteHandle:\w+>' => 'commerce-bundles/bundles/edit',
-				]);
+                $event->rules = array_merge($event->rules, [
+                    'commerce-bundles/bundle-types/new' => 'commerce-bundles/bundle-types/edit',
+                    'commerce-bundles/bundle-types/<bundleTypeId:\d+>' => 'commerce-bundles/bundle-types/edit',
+
+                    'commerce-bundles/bundles/<bundleTypeHandle:{handle}>' => 'commerce-bundles/bundles/index',
+                    'commerce-bundles/bundles/<bundleTypeHandle:{handle}>/new' => 'commerce-bundles/bundles/edit',
+                    'commerce-bundles/bundles/<bundleTypeHandle:{handle}>/new/<siteHandle:\w+>' => 'commerce-bundles/bundles/edit',
+                    'commerce-bundles/bundles/<bundleTypeHandle:{handle}>/<bundleId:\d+>' => 'commerce-bundles/bundles/edit',
+                    'commerce-bundles/bundles/<bundleTypeHandle:{handle}>/<bundleId:\d+>/<siteHandle:\w+>' => 'commerce-bundles/bundles/edit',
+                ]);
             }
         );
 
@@ -108,7 +108,7 @@ class Bundles extends Plugin
             Elements::class,
             Elements::EVENT_REGISTER_ELEMENT_TYPES,
             function (RegisterComponentTypesEvent $event) {
-				$event->types[] = Bundle::class;
+                $event->types[] = Bundle::class;
             }
         );
 
@@ -120,28 +120,28 @@ class Bundles extends Plugin
                 $variable = $event->sender;
                 $variable->attachBehavior('bundles', BundlesVariable::class);
             }
-		);
-		
-		Event::on(
-			Purchasables::class,
-			Purchasables::EVENT_REGISTER_PURCHASABLE_ELEMENT_TYPES,
-			function(RegisterComponentTypesEvent $event) {
-           		$event->types[] = Bundle::class;
-			}
-		);
+        );
 
-		Event::on(
-			Fields::class,
-			Fields::EVENT_REGISTER_FIELD_TYPES,
-			function(RegisterComponentTypesEvent $event) {
-            	$event->types[] = BundlesField::class;
-			}
-		);
+        Event::on(
+            Purchasables::class,
+            Purchasables::EVENT_REGISTER_PURCHASABLE_ELEMENT_TYPES,
+            function(RegisterComponentTypesEvent $event) {
+                $event->types[] = Bundle::class;
+            }
+        );
 
-		Event::on(
-			UserPermissions::class,
-			UserPermissions::EVENT_REGISTER_PERMISSIONS,
-			function(RegisterUserPermissionsEvent $event) {
+        Event::on(
+            Fields::class,
+            Fields::EVENT_REGISTER_FIELD_TYPES,
+            function(RegisterComponentTypesEvent $event) {
+                $event->types[] = BundlesField::class;
+            }
+        );
+
+        Event::on(
+            UserPermissions::class,
+            UserPermissions::EVENT_REGISTER_PERMISSIONS,
+            function(RegisterUserPermissionsEvent $event) {
             $bundleTypes = $this->bundleTypes->getAllBundleTypes();
 
             $bundleTypePermissions = [];
@@ -152,13 +152,13 @@ class Bundles extends Plugin
             }
 
             $event->permissions[Craft::t('commerce-bundles', 'Bundles')] = [
-				'commerce-bundles-manageBundles' => ['label' => Craft::t('commerce-bundles', 'Manage bundles'), 'nested' => $bundleTypePermissions],
+                'commerce-bundles-manageBundles' => ['label' => Craft::t('commerce-bundles', 'Manage bundles'), 'nested' => $bundleTypePermissions],
                 'commerce-bundles-manageBundleType' => ['label' => Craft::t('commerce-bundles', 'Manage bundle types')],
-                
+
             ];
         });
 
-        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_STANDARD_FIELDS, function(DefineFieldLayoutFieldsEvent $e) {
+        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function(DefineFieldLayoutFieldsEvent $e) {
             /** @var FieldLayout $fieldLayout */
             $fieldLayout = $e->sender;
 
@@ -167,10 +167,10 @@ class Bundles extends Plugin
                     $e->fields[] = TitleField::class;
                     break;
             }
-            
+
         });
-		
-		Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->bundleTypes, 'afterSaveSiteHandler']);
+
+        Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->bundleTypes, 'afterSaveSiteHandler']);
         Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->bundles, 'afterSaveSiteHandler']);
 
         Craft::info(
@@ -181,13 +181,13 @@ class Bundles extends Plugin
             ),
             __METHOD__
         );
-	}
-	
-	public function getCpNavItem(): array
+    }
+
+    public function getCpNavItem(): array
     {
-		$navItems = parent::getCpNavItem();
-		
-		$navItems['label'] = Craft::t('commerce-bundles', 'Bundles');
+        $navItems = parent::getCpNavItem();
+
+        $navItems['label'] = Craft::t('commerce-bundles', 'Bundles');
 
         if (Craft::$app->getUser()->checkPermission('commerce-bundles-manageBundles')) {
             $navItems['subnav']['bundles'] = [

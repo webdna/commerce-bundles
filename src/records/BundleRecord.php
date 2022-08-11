@@ -4,13 +4,13 @@
  *
  * Bundles plugin for Craft Commerce
  *
- * @link      https://kurious.agency
- * @copyright Copyright (c) 2019 Kurious Agency
+ * @link      https://webdna.co.uk
+ * @copyright Copyright (c) 2019 webdna
  */
 
-namespace kuriousagency\commerce\bundles\records;
+namespace webdna\commerce\bundles\records;
 
-use kuriousagency\commerce\bundles\Bundles;
+use webdna\commerce\bundles\Bundles;
 
 use craft\db\ActiveRecord;
 use craft\records\Element;
@@ -21,7 +21,7 @@ use craft\commerce\records\ShippingCategory;
 use yii\db\ActiveQueryInterface;
 
 /**
- * @author    Kurious Agency
+ * @author    webdna
  * @package   Bundles
  * @since     1.0.0
  */

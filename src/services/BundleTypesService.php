@@ -1,18 +1,18 @@
 <?php
-namespace kuriousagency\commerce\bundles\services;
+namespace webdna\commerce\bundles\services;
 
-use kuriousagency\commerce\bundles\elements\Bundle;
-// use kuriousagency\commerce\bundles\events\BundleTypeEvent;
-use kuriousagency\commerce\bundles\models\BundleTypeModel;
-use kuriousagency\commerce\bundles\models\BundleTypeSiteModel;
-use kuriousagency\commerce\bundles\records\BundleTypeRecord;
-use kuriousagency\commerce\bundles\records\BundleTypeSiteRecord;
+use webdna\commerce\bundles\elements\Bundle;
+use webdna\commerce\bundles\models\BundleTypeModel;
+use webdna\commerce\bundles\models\BundleTypeSiteModel;
+use webdna\commerce\bundles\records\BundleTypeRecord;
+use webdna\commerce\bundles\records\BundleTypeSiteRecord;
 
 use Craft;
 use craft\db\Query;
 use craft\events\SiteEvent;
 use craft\helpers\App;
 use craft\queue\jobs\ResaveElements;
+use craft\web\View;
 
 use yii\base\Component;
 use yii\base\Exception;
@@ -29,12 +29,12 @@ class BundleTypesService extends Component
     // Properties
     // =========================================================================
 
-    private $_fetchedAllBundleTypes = false;
-    private $_bundleTypesById;
-    private $_bundleTypesByHandle;
-    private $_allBundleTypeIds;
-    private $_editableBundleTypeIds;
-    private $_siteSettingsByBundleId = [];
+    private bool $_fetchedAllBundleTypes = false;
+    private array $_bundleTypesById = [];
+    private array $_bundleTypesByHandle = [];
+    private ?array $_allBundleTypeIds = null;
+    private ?array $_editableBundleTypeIds = null;
+    private array $_siteSettingsByBundleId = [];
 
 
     // Public Methods
@@ -99,7 +99,7 @@ class BundleTypesService extends Component
         return $this->_bundleTypesById ?: [];
     }
 
-    public function getBundleTypeByHandle($handle)
+    public function getBundleTypeByHandle(string $handle): BundleTypeModel|null
     {
         if (isset($this->_bundleTypesByHandle[$handle])) {
             return $this->_bundleTypesByHandle[$handle];
@@ -122,7 +122,7 @@ class BundleTypesService extends Component
         return $this->_bundleTypesByHandle[$handle];
     }
 
-    public function getBundleTypeSites($bundleTypeId): array
+    public function getBundleTypeSites(int $bundleTypeId): array
     {
         if (!isset($this->_siteSettingsByBundleId[$bundleTypeId])) {
             $rows = (new Query())
@@ -237,7 +237,7 @@ class BundleTypesService extends Component
                     $siteSettingsRecord->siteId = $siteId;
                 }
 
-			    if ($siteSettingsRecord->hasUrls = $siteSettings['hasUrls']) {
+                if ($siteSettingsRecord->hasUrls = $siteSettings['hasUrls']) {
                     $siteSettingsRecord->uriFormat = $siteSettings['uriFormat'];
                     $siteSettingsRecord->template = $siteSettings['template'];
                 } else {
@@ -257,6 +257,7 @@ class BundleTypesService extends Component
                     }
                 }
 
+                //Craft::dd($siteSettingsRecord);
                 $siteSettingsRecord->save(false);
 
                 // Set the ID on the model
@@ -347,7 +348,7 @@ class BundleTypesService extends Component
         }
     }
 
-    public function getBundleTypeById(int $bundleTypeId)
+    public function getBundleTypeById(int $bundleTypeId): BundleTypeModel|null
     {
         if (isset($this->_bundleTypesById[$bundleTypeId])) {
             return $this->_bundleTypesById[$bundleTypeId];
@@ -378,7 +379,7 @@ class BundleTypesService extends Component
             // Set Craft to the site template mode
             $view = Craft::$app->getView();
             $oldTemplateMode = $view->getTemplateMode();
-            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+            $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
 
             // Does the template exist?
             $templateExists = Craft::$app->getView()->doesTemplateExist((string)$bundleTypeSiteSettings[$siteId]->template);
@@ -394,7 +395,7 @@ class BundleTypesService extends Component
         return false;
     }
 
-    public function afterSaveSiteHandler(SiteEvent $event)
+    public function afterSaveSiteHandler(SiteEvent $event): void
     {
         if ($event->isNew) {
             $primarySiteSettings = (new Query())
@@ -427,7 +428,7 @@ class BundleTypesService extends Component
     // Private methods
     // =========================================================================
 
-    private function _memoizeBundleType(BundleTypeModel $bundleType)
+    private function _memoizeBundleType(BundleTypeModel $bundleType): void
     {
         $this->_bundleTypesById[$bundleType->id] = $bundleType;
         $this->_bundleTypesByHandle[$bundleType->handle] = $bundleType;

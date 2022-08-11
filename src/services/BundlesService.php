@@ -4,17 +4,18 @@
  *
  * Bundles plugin for Craft Commerce
  *
- * @link      https://kurious.agency
- * @copyright Copyright (c) 2019 Kurious Agency
+ * @link      https://webdna.co.uk
+ * @copyright Copyright (c) 2019 webdna
  */
 
-namespace kuriousagency\commerce\bundles\services;
+namespace webdna\commerce\bundles\services;
 
-use kuriousagency\commerce\bundles\Bundles;
-use kuriousagency\commerce\bundles\elements\Bundle;
+use webdna\commerce\bundles\Bundles;
+use webdna\commerce\bundles\elements\Bundle;
 
 use Craft;
 use craft\base\Component;
+use craft\base\ElementInterface;
 use craft\events\SiteEvent;
 use craft\queue\jobs\ResaveElements;
 use craft\db\Query;
@@ -23,21 +24,21 @@ use craft\commerce\Plugin as Commerce;
 use craft\commerce\models\LineItem;
 
 /**
- * @author    Kurious Agency
+ * @author    webdna
  * @package   Bundles
  * @since     1.0.0
  */
 class BundlesService extends Component
 {
     // Public Methods
-	// =========================================================================
-	
-	public function getBundleById(int $id, $siteId = null)
+    // =========================================================================
+
+    public function getBundleById(int $id, $siteId = null): ?ElementInterface
     {
         return Craft::$app->getElements()->getElementById($id, Bundle::class, $siteId);
     }
 
-	public function afterSaveSiteHandler(SiteEvent $event)
+    public function afterSaveSiteHandler(SiteEvent $event): void
     {
         $queue = Craft::$app->getQueue();
         $siteId = $event->oldPrimarySiteId;
@@ -55,49 +56,11 @@ class BundlesService extends Component
                 ]
             ]));
         }
-	}
+    }
 
-	/*public function getBundleStock($bundleId)
-	{
-
-		$stock = [];
-		
-		$rows = $this->_createBundleProductsQuery()
-			->where(['bundleId' => $bundleId])
-			->all();
-
-		foreach($rows as $row) {
-			$purchasable = Commerce::getInstance()->getVariants()->getVariantById($row['purchasableId']);
-			$stock[] = $purchasable->hasUnlimitedStock ? 'unlimited' : floor($purchasable->stock/$row['qty']);
-		}
-
-		if (array_unique($stock) === array('unlimited')) { 
-			return "unlimited";
-		}
-
-		$stockValueArray = array_diff($stock,["unlimited"]);
-		$minStock = min($stockValueArray);
-
-		return $minStock;
-
-    }*/
-    
-    public function isBundle(LineItem $lineItem)
+    public function isBundle(LineItem $lineItem): bool
     {
         return (bool)(get_class($lineItem->purchasable) === Bundle::class);
     }
 
-	private function _createBundleProductsQuery(): Query
-    {
-        return (new Query())
-            ->select([
-                'id',
-                'bundleId',
-				'purchasableId',
-				'purchasableType',
-                'qty',
-            ])
-            ->from(['{{%bundles_purchasables}}']);
-    }
-	
 }

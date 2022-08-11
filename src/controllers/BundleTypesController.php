@@ -1,15 +1,16 @@
 <?php
-namespace kuriousagency\commerce\bundles\controllers;
+namespace webdna\commerce\bundles\controllers;
 
-use kuriousagency\commerce\bundles\Bundles;
-use kuriousagency\commerce\bundles\elements\Bundle;
-use kuriousagency\commerce\bundles\models\BundleTypeModel;
-use kuriousagency\commerce\bundles\models\BundleTypeSiteModel;
+use webdna\commerce\bundles\Bundles;
+use webdna\commerce\bundles\elements\Bundle;
+use webdna\commerce\bundles\models\BundleTypeModel;
+use webdna\commerce\bundles\models\BundleTypeSiteModel;
 
 use Craft;
 use craft\web\Controller;
 
 use yii\base\Exception;
+use yii\web\HttpException;
 use yii\web\Response;
 
 class BundleTypesController extends Controller
@@ -17,14 +18,14 @@ class BundleTypesController extends Controller
     // Public Methods
     // =========================================================================
 
-    public function init()
+    public function init(): void
     {
         $this->requirePermission('commerce-bundle-manageTypes');
 
         parent::init();
     }
 
-    public function actionEdit(int $bundleTypeId = null, BundleTypeModel $bundleType = null): Response
+    public function actionEdit(?int $bundleTypeId = null, ?BundleTypeModel $bundleType = null): Response
     {
         $variables = [
             'bundleTypeId' => $bundleTypeId,
@@ -51,18 +52,18 @@ class BundleTypesController extends Controller
         } else {
             $variables['title'] = Craft::t('commerce-bundles', 'Create a Bundle Type');
         }
-        
+
         return $this->renderTemplate('commerce-bundles/bundle-types/_edit', $variables);
     }
 
-    public function actionSave()
+    public function actionSave(): Response|null
     {
         $this->requirePostRequest();
 
         $bundleType = new BundleTypeModel();
 
         $request = Craft::$app->getRequest();
-        
+
         $bundleType->id = $request->getBodyParam('bundleTypeId');
         $bundleType->name = $request->getBodyParam('name');
         $bundleType->handle = $request->getBodyParam('handle');

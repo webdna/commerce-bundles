@@ -1,7 +1,7 @@
 <?php
-namespace kuriousagency\commerce\bundles\models;
+namespace webdna\commerce\bundles\models;
 
-use kuriousagency\commerce\bundles\Bundles;
+use webdna\commerce\bundles\Bundles;
 
 use Craft;
 use craft\base\Model;
@@ -14,16 +14,16 @@ class BundleTypeSiteModel extends Model
     // Properties
     // =========================================================================
 
-    public $id;
-    public $bundleTypeId;
-    public $siteId;
-    public $hasUrls;
-    public $uriFormat;
-    public $template;
-    public $uriFormatIsRequired = true;
+    public ?int $id = null;
+    public ?int $bundleTypeId = null;
+    public ?int $siteId = null;
+    public ?bool $hasUrls = null;
+    public string $uriFormat = '';
+    public string $template = '';
+    public bool $uriFormatIsRequired = true;
 
-    private $_bundleType;
-    private $_site;
+    private ?BundleTypeModel $_bundleType = null;
+    private ?Site $_site = null;
 
 
     // Public Methods
@@ -46,7 +46,7 @@ class BundleTypeSiteModel extends Model
         return $this->_bundleType;
     }
 
-    public function setBundleType(BundleTypeModel $bundleType)
+    public function setBundleType(BundleTypeModel $bundleType): void
     {
         $this->_bundleType = $bundleType;
     }
@@ -56,7 +56,7 @@ class BundleTypeSiteModel extends Model
         if (!$this->_site) {
             $this->_site = Craft::$app->getSites()->getSiteById($this->siteId);
         }
-        
+
         return $this->_site;
     }
 

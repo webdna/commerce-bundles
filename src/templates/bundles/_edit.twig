@@ -1,13 +1,13 @@
-{% extends '_layouts/cp' %} 
-{% set selectedSubnavItem = 'bundles' %} 
+{% extends '_layouts/cp' %}
+{% set selectedSubnavItem = 'bundles' %}
 {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ "commerceproducts commerceproductsedit bundlesedit" %}
 
-{% set crumbs = [ { label: 'Bundles' | t('commerce-bundles'), url: url('commerce-bundles') }, { label: bundleType.name | t('commerce-bundles'), url: url('commerce-bundles/bundles/' ~ bundleType.handle) }, ] %} 
-{% set fullPageForm = true %} 
-{% set saveShortcutRedirect = continueEditingUrl %} 
-{% set products = craft.products.id(410,413) %} 
-{% import '_includes/forms' as forms %} 
-{% import 'commerce-bundles/bundles/_fields' as bundleFields %} 
+{% set crumbs = [ { label: 'Bundles' | t('commerce-bundles'), url: url('commerce-bundles') }, { label: bundleType.name | t('commerce-bundles'), url: url('commerce-bundles/bundles/' ~ bundleType.handle) }, ] %}
+{% set fullPageForm = true %}
+{% set saveShortcutRedirect = continueEditingUrl %}
+{% set products = craft.products.id(410,413) %}
+{% import '_includes/forms' as forms %}
+{% import 'commerce-bundles/bundles/_fields' as bundleFields %}
 
 {% block header %}
 {{ block('pageTitle') }}
@@ -175,59 +175,59 @@
 		<div class="value">{{ bundle.dateUpdated | date('short') }} {{ bundle.dateUpdated | time('short') }}</div>
 	</div>
 </div>
-{% endif %} {% endblock %} 
-{% js %} 
+{% endif %} {% endblock %}
+{% js %}
 var elements = [];
 var qty = [];
 {% for purchasableType in purchasableTypes %}
 	{% set id = 'purchasables-'~purchasableType.elementType|id %}
 	{% set type = purchasableType.elementType|replace({'\\':'\\\\'}) %}
-	
-	elements['{{id}}'] = $('#{{id}}-Picker .element'); 
+
+	elements['{{id}}'] = $('#{{id}}-Picker .element');
 	qty['{{id}}'] = { {% for key,qty in bundle.qtys %}
 				{% set value = qty > 0 ? qty : 1 %}
-				{{ key ~ ':' ~ value }}, 
-			{% endfor %} 
-		}; 
+				{{ key ~ ':' ~ value }},
+			{% endfor %}
+		};
 		//console.log(elements['{{id}}'])
-	elements['{{id}}'].each(function(e) { 
-		var $this = $(this), 
-			id = $this.data('id'); 
-		var $div = $('<div class="flex"></div>').appendTo($this); 
-			$div.append($this.find('.status')); 
-			$div.append($this.find('.label')); 
-			$div.append('<div class="label">Qty: <input type="number" min="1" class="text qty" data-id="'+id+'" name="qty['+id+']" value="'+qty['{{id}}'][id]+'" /></div>'); 
-			$div.append($this.find('.icon')); 
-	}) 
-	new Craft.BaseElementSelectInput({ 
-		id: '{{id}}-Picker', 
-		name: 'purchasables[{{type}}]', 
-		elementType: '{{type}}', 
-		sources: null, 
-		criteria: null, 
-		sourceElementId: null, 
-		viewMode: 'list', 
-		limit: null, 
+	elements['{{id}}'].each(function(e) {
+		var $this = $(this),
+			id = $this.data('id');
+		var $div = $('<div class="flex"></div>').appendTo($this);
+			$div.append($this.find('.status'));
+			$div.append($this.find('.label'));
+			$div.append('<div class="label">Qty: <input type="number" min="1" class="text qty" data-id="'+id+'" name="qty['+id+']" value="'+qty['{{id}}'][id]+'" /></div>');
+			$div.append($this.find('.icon'));
+	})
+	new Craft.BaseElementSelectInput({
+		id: '{{id}}-Picker',
+		name: 'purchasables[{{type}}]',
+		elementType: '{{type}}',
+		sources: null,
+		criteria: null,
+		sourceElementId: null,
+		viewMode: 'list',
+		limit: null,
 		editable: false,
-		sortable: false, 
-		selectable: false, 
-		modalStorageKey: null, 
-		fieldId: null, 
-		onSelectElements: function(e) { 
-			$.each(e, function(i) { 
-				console.log(this); 
-				var $el = $('#{{id}}-Picker .element[data-id="'+this.id+'"]'); 
-				var $div = $('<div class="flex"></div>').appendTo($el); 
-				$div.append($el.find('.status')); 
-				$div.append($el.find('.label')); 
-				$div.append('<div class="label qty">Qty: <input type="number" min="1" class="text qty" data-id="'+this.id+'" name="qty['+this.id+']" value="1" /></div>'); 
-				$div.append($el.find('.icon')); 
-			}); 
-		}, 
-	}); 
+		sortable: false,
+		selectable: false,
+		modalStorageKey: null,
+		fieldId: null,
+		onSelectElements: function(e) {
+			$.each(e, function(i) {
+				console.log(this);
+				var $el = $('#{{id}}-Picker .element[data-id="'+this.id+'"]');
+				var $div = $('<div class="flex"></div>').appendTo($el);
+				$div.append($el.find('.status'));
+				$div.append($el.find('.label'));
+				$div.append('<div class="label qty">Qty: <input type="number" min="1" class="text qty" data-id="'+this.id+'" name="qty['+this.id+']" value="1" /></div>');
+				$div.append($el.find('.icon'));
+			});
+		},
+	});
 {% endfor %}
-{% endjs %} 
-{% do view.registerAssetBundle("kuriousagency\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}
+{% endjs %}
+{% do view.registerAssetBundle("webdna\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}
 
 
 
