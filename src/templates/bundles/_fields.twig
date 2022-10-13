@@ -86,12 +86,11 @@
 
     {{ forms.textField({
         id: 'price',
-        label: 'Price' | t('commerce-bundles'),
+        label: 'Price'|t('commerce')~' ('~craft.commerce.paymentCurrencies.primaryPaymentCurrency.iso|upper~')',
 		required: true,
         name: 'price',
         value: (bundle.price == '0' ? '0' | number : (bundle.price ?  bundle.price | number ?: '')),
-        placeholder: 'Enter price' | t('commerce-bundles'),
-        unit: craft.commerce.paymentCurrencies.primaryPaymentCurrency.iso | upper,
+        placeholder: 'Enter price' | t('commerce'),
         errors: bundle.getErrors('price'),
     }) }}
 	

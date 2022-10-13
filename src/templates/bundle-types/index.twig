@@ -8,8 +8,12 @@
     { label: 'Bundle Types' | t('commerce-bundles'), url: url('commerce-bundles/bundle-types') },
 ] %}
 
+{% block actionButton %}
+	<a href="{{ url('commerce-bundles/bundletypes/new') }}" class="btn submit add icon">{{ 'New bundle type'|t('commerce') }}</a>
+{% endblock %}
+
 {% set bundleTypes = craft.commerceBundles.bundleTypes.getAllBundleTypes() %}
-{% block blockContent %}
+{% block content %}
 	<div id="noBundleTypes"{% if bundleTypes %} class="hidden"{% endif %}>
 		<p>{{ 'No bundle types exist yet.' | t('commerce-bundles') }}</p>
 	</div>
@@ -24,7 +28,7 @@
 			<tbody>
     			{% for bundleType in bundleTypes %}
     				<tr data-id="{{ bundleType.id }}" data-name="{{ bundleType.name | t('commerce-bundles') }}">
-    					<th scope="row" data-title="{{ 'Name' | t('commerce-bundles') }}"><a href="{{ url('commerce-bundles/bundle-types/' ~ bundleType.id) }}">{{ bundleType.name | t('commerce-bundles') }}</a></th>
+    					<th scope="row" data-title="{{ 'Name' | t('commerce-bundles') }}"><a href="{{ url('commerce-bundles/bundletypes/' ~ bundleType.id) }}">{{ bundleType.name | t('commerce-bundles') }}</a></th>
     					<td data-title="{{ 'Handle' | t('commerce-bundles') }}"><code>{{ bundleType.handle }}</code></td>
     					<td class="thin"><a class="delete icon" title="{{ 'Delete' | t('commerce-bundles') }}" role="button"></a></td>
     				</tr>
@@ -33,9 +37,9 @@
 		</table>
 	{% endif %}
 
-    <div id="newBundleType" class="buttons">
+    {# <div id="newBundleType" class="buttons">
         <a href="{{ url('commerce-bundles/bundle-types/new') }}" class="btn submit add icon">{{ 'New Bundle Type' | t('commerce-bundles') }}</a>
-    </div>
+    </div> #}
 {% endblock %}
 
 {% js %}

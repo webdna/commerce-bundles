@@ -31,6 +31,8 @@ use craft\events\RegisterUserPermissionsEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\fieldlayoutelements\TitleField;
 use craft\models\FieldLayout;
+use craft\events\RegisterCpNavItemsEvent;
+use craft\web\twig\variables\Cp;
 
 use craft\commerce\services\Purchasables;
 
@@ -54,6 +56,10 @@ class Bundles extends Plugin
      * @var Bundles
      */
     public static Plugin $plugin;
+    
+    public bool $hasCpSettings = false;
+    
+    public bool $hasCpSection = true;
 
     // Public Properties
     // =========================================================================
@@ -92,9 +98,11 @@ class Bundles extends Plugin
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $event->rules = array_merge($event->rules, [
-                    'commerce-bundles/bundle-types/new' => 'commerce-bundles/bundle-types/edit',
-                    'commerce-bundles/bundle-types/<bundleTypeId:\d+>' => 'commerce-bundles/bundle-types/edit',
-
+                    'commerce-bundles/bundletypes' => 'commerce-bundles/bundle-types/index',
+                    'commerce-bundles/bundletypes/new' => 'commerce-bundles/bundle-types/edit',
+                    'commerce-bundles/bundletypes/<bundleTypeId:\d+>' => 'commerce-bundles/bundle-types/edit',
+                    
+                    'commerce-bundles' => 'commerce-bundles/bundles/index',
                     'commerce-bundles/bundles/<bundleTypeHandle:{handle}>' => 'commerce-bundles/bundles/index',
                     'commerce-bundles/bundles/<bundleTypeHandle:{handle}>/new' => 'commerce-bundles/bundles/edit',
                     'commerce-bundles/bundles/<bundleTypeHandle:{handle}>/new/<siteHandle:\w+>' => 'commerce-bundles/bundles/edit',
@@ -172,6 +180,7 @@ class Bundles extends Plugin
 
         Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->bundleTypes, 'afterSaveSiteHandler']);
         Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->bundles, 'afterSaveSiteHandler']);
+        
 
         Craft::info(
             Craft::t(
@@ -182,6 +191,8 @@ class Bundles extends Plugin
             __METHOD__
         );
     }
+    
+    
 
     public function getCpNavItem(): array
     {
@@ -199,16 +210,9 @@ class Bundles extends Plugin
         if (Craft::$app->getUser()->checkPermission('commerce-bundles-manageBundleType')) {
             $navItems['subnav']['bundleTypes'] = [
                 'label' => Craft::t('commerce-bundles', 'Bundle Types'),
-                'url' => 'commerce-bundles/bundle-types',
+                'url' => 'commerce-bundles/bundletypes',
             ];
         }
-
-        // if (Craft::$app->getUser()->getIsAdmin()) {
-        //     $navItems['subnav']['settings'] = [
-        //         'label' => Craft::t('commerce-bundles', 'Settings'),
-        //         'url' => 'bundles/settings',
-        //     ];
-        // }
 
         return $navItems;
     }

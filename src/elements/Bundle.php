@@ -116,6 +116,8 @@ class Bundle extends Purchasable
     {
         return $this->title;
     }
+    
+    
 
     /**
      * @inheritdoc
@@ -446,7 +448,16 @@ class Bundle extends Purchasable
 
     public function getDescription(): string
     {
-        return $this->title;
+        $description = "Bundle: $this->title";
+    
+        /*if ($format = $this->getProduct()->getType()->descriptionFormat) {
+            if ($rendered = Craft::$app->getView()->renderObjectTemplate($format, $this)) {
+                $description = $rendered;
+            }
+        }*/
+    
+        // If title is not set yet default to blank string
+        return (string)$description;
     }
 
     public function getTaxCategoryId(): int

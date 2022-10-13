@@ -24,6 +24,11 @@ class BundleTypesController extends Controller
 
         parent::init();
     }
+    
+    public function actionIndex(): Response
+    {
+        return $this->renderTemplate('commerce-bundles/bundle-types/index');
+    }
 
     public function actionEdit(?int $bundleTypeId = null, ?BundleTypeModel $bundleType = null): Response
     {

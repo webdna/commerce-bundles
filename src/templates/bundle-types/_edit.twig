@@ -11,7 +11,7 @@
 {% set selectedTab = 'bundle-type-settings' %}
 {% import '_includes/forms' as forms %}
 
-{% block blockContent %}
+{% block content %}
 	<input type="hidden" name="action" value="commerce-bundles/bundle-types/save">
 	{{ redirectInput('commerce-bundles/bundle-types') }}
 	{% if bundleType.id %}<input type="hidden" name="bundleTypeId" value="{{ bundleType.id }}">{% endif %}

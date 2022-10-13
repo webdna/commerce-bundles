@@ -2,7 +2,7 @@
 	"name": "webdna/commerce-bundles",
 	"description": "Bundles plugin for Craft Commerce",
 	"type": "craft-plugin",
-	"version": "2.0.0-beta.1",
+	"version": "2.0.0-beta.2",
 	"keywords": [
 		"craft",
 		"cms",
@@ -11,8 +11,8 @@
 		"bundles"
 	],
 	"support": {
-		"docs": "https://github.com/webdna/commerce-bundles/blob/master/README.md",
-		"issues": "https://github.com/webdna/commerce-bundles/issues"
+		"docs": "https://github.com/webdna/commerce-bundles",
+		"issues": "https://github.com/webdna/commerce-bundles/issues?state=open"
 	},
 	"license": "proprietary",
 	"authors": [
@@ -31,14 +31,8 @@
 		}
 	},
 	"extra": {
-		"name": "Bundles",
+		"name": "Commerce Bundles",
 		"handle": "commerce-bundles",
-		"hasCpSettings": false,
-		"hasCpSection": true,
-		"changelogUrl": "https://raw.githubusercontent.com/webdna/commerce-bundles/master/CHANGELOG.md",
-		"components": {
-			"bundlesService": "webdna\\commerce\\bundles\\services\\BundlesService"
-		},
 		"class": "webdna\\commerce\\bundles\\Bundles"
 	}
 }
