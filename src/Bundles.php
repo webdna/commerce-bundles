@@ -151,19 +151,29 @@ class Bundles extends Plugin
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             function(RegisterUserPermissionsEvent $event) {
             $bundleTypes = $this->bundleTypes->getAllBundleTypes();
-
             $bundleTypePermissions = [];
-
+            
             foreach ($bundleTypes as $id => $bundleType) {
                 $suffix = ':' . $id;
-                $bundleTypePermissions['commerce-bundles-managebundleType' . $suffix] = ['label' => Craft::t('commerce-bundles', 'Manage “{type}” bundles', ['type' => $bundleType->name])];
+                $bundleTypePermissions['commerce-bundles-managebundleType' . $suffix] = [
+                    'label' => Craft::t('commerce-bundles', 'Manage “{type}” bundles', ['type' => $bundleType->name])
+                ];
             }
-
-            $event->permissions[Craft::t('commerce-bundles', 'Bundles')] = [
-                'commerce-bundles-manageBundles' => ['label' => Craft::t('commerce-bundles', 'Manage bundles'), 'nested' => $bundleTypePermissions],
-                'commerce-bundles-manageBundleType' => ['label' => Craft::t('commerce-bundles', 'Manage bundle types')],
-
+            
+            $permissions = [
+                'heading' => Craft::t('commerce', 'Bundles'),
+                'permissions' => [
+                    'commerce-bundles-manageBundleType' => [
+                        'label' => Craft::t('commerce-bundles', 'Manage bundle types')
+                    ],
+                    'commerce-bundles-manageBundles' => [
+                        'label' => Craft::t('commerce-bundles', 'Manage bundles'), 
+                        'nested' => $bundleTypePermissions
+                    ],
+                ],
             ];
+        
+            $event->permissions[] = $permissions;
         });
 
         Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function(DefineFieldLayoutFieldsEvent $e) {
