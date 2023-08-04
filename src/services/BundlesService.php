@@ -51,8 +51,7 @@ class BundlesService extends Component
                 'elementType' => $elementType,
                 'criteria' => [
                     'siteId' => $siteId,
-                    'status' => null,
-                    'enabledForSite' => false
+                    'status' => null
                 ]
             ]));
         }
