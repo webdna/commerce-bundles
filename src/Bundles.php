@@ -124,7 +124,6 @@ class Bundles extends Plugin
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
             function (Event $event) {
-                /** @var CraftVariable $variable */
                 $variable = $event->sender;
                 $variable->attachBehavior('bundles', BundlesVariable::class);
             }
@@ -153,9 +152,9 @@ class Bundles extends Plugin
             $bundleTypes = $this->bundleTypes->getAllBundleTypes();
             $bundleTypePermissions = [];
             
-            foreach ($bundleTypes as $id => $bundleType) {
-                $suffix = ':' . $id;
-                $bundleTypePermissions['commerce-bundles-managebundleType' . $suffix] = [
+            foreach ($bundleTypes as $bundleType) {
+                $suffix = ':' . $bundleType->uid;
+                $bundleTypePermissions['commerce-bundles-manageBundleType' . $suffix] = [
                     'label' => Craft::t('commerce-bundles', 'Manage “{type}” bundles', ['type' => $bundleType->name])
                 ];
             }
@@ -177,7 +176,6 @@ class Bundles extends Plugin
         });
 
         Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function(DefineFieldLayoutFieldsEvent $e) {
-            /** @var FieldLayout $fieldLayout */
             $fieldLayout = $e->sender;
 
             switch ($fieldLayout->type) {

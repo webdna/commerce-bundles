@@ -1,6 +1,6 @@
 <?php
 /**
- * Bundles plugin for Craft CMS 3.x
+ * Bundles plugin for Craft CMS 4.x
  *
  * Bundles plugin for Craft Commerce
  *
@@ -20,26 +20,27 @@ use webdna\commerce\bundles\records\BundleRecord;
 use webdna\commerce\bundles\records\BundlePurchasableRecord;
 
 use Craft;
-use craft\elements\db\ElementQueryInterface;
+use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\elements\User;
 use craft\elements\actions\Delete;
+use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use craft\validators\DateTimeValidator;
 
+use craft\commerce\Plugin as Commerce;
 use craft\commerce\base\Purchasable;
 use craft\commerce\elements\Order;
 use craft\commerce\models\LineItem;
 use craft\commerce\models\TaxCategory;
 use craft\commerce\models\ShippingCategory;
-use craft\commerce\Plugin as Commerce;
 
 use craft\digitalproducts\Plugin as DigitalProducts;
-use craft\models\FieldLayout;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\db\Expression;
 
 use DateTime;
 
@@ -54,39 +55,21 @@ class Bundle extends Purchasable
      // Constants
     // =========================================================================
 
-    const STATUS_LIVE = 'live';
-    const STATUS_PENDING = 'pending';
-    const STATUS_EXPIRED = 'expired';
+    public const STATUS_LIVE = 'live';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_EXPIRED = 'expired';
 
-    const EVENT_BEFORE_CAPTURE_BUNDLE_SNAPSHOT = 'beforeCaptureBundleSnapshot';
-    const EVENT_AFTER_CAPTURE_BUNDLE_SNAPSHOT = 'afterCaptureBundleSnapshot';
+    public const EVENT_BEFORE_CAPTURE_BUNDLE_SNAPSHOT = 'beforeCaptureBundleSnapshot';
+    public const EVENT_AFTER_CAPTURE_BUNDLE_SNAPSHOT = 'afterCaptureBundleSnapshot';
 
-    const EVENT_AFTER_COMPLETE_BUNDLE_ORDER = 'afterCompleteBundleOrder';
+    public const EVENT_AFTER_COMPLETE_BUNDLE_ORDER = 'afterCompleteBundleOrder';
 
 
-    // Public Properties
-    // =========================================================================
-
-    public ?int $id = null;
-    public ?int $typeId = null;
-    public ?int $taxCategoryId = null;
-    public ?int $shippingCategoryId = null;
-    public ?DateTime $postDate = null;
-    public ?DateTime $expiryDate = null;
-    public ?string $sku = null;
-    public ?float $price = null;
-
-    private ?BundleTypeModel $_bundleType = null;
-    private ?array $_purchasables = null;
-    private ?array $_purchasableIds = null;
-    private ?array $_qtys = null;
+    
 
     // Static Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
     public static function displayName(): string
     {
         return Craft::t('commerce-bundles', 'Bundle');
@@ -106,30 +89,18 @@ class Bundle extends Purchasable
     {
         return Craft::t('commerce-bundles', 'bundles');
     }
-
-    public function __toString(): string
+    
+    public static function refHandle(): ?string
     {
-        return (string)$this->title;
+        return 'bundle';
     }
 
-    public function getName(): string
-    {
-        return $this->title;
-    }
     
-    
-
-    /**
-     * @inheritdoc
-     */
     public static function hasContent(): bool
     {
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function hasTitles(): bool
     {
         return true;
@@ -145,14 +116,16 @@ class Bundle extends Purchasable
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function isLocalized(): bool
     {
         return true;
     }
-
+    
+    public static function find(): BundleQuery
+    {
+        return new BundleQuery(static::class);
+    }
+    
     public static function defineSources(?string $context = null): array
     {
         if ($context === 'index') {
@@ -213,6 +186,152 @@ class Bundle extends Purchasable
 
         return $actions;
     }
+    
+    protected static function defineTableAttributes(): array
+    {
+        return [
+            //'title' => ['label' => Craft::t('commerce-bundles', 'Title')],
+            'type' => ['label' => Craft::t('commerce-bundles', 'Type')],
+            'slug' => ['label' => Craft::t('commerce-bundles', 'Slug')],
+            'sku' => ['label' => Craft::t('commerce-bundles', 'SKU')],
+            'price' => ['label' => Craft::t('commerce-bundles', 'Price')],
+            'link' => ['label' => Craft::t('commerce', 'Link'), 'icon' => 'world'],
+            'postDate' => ['label' => Craft::t('commerce-bundles', 'Post Date')],
+            'expiryDate' => ['label' => Craft::t('commerce-bundles', 'Expiry Date')],
+        ];
+    }
+    
+    protected static function defineDefaultTableAttributes(string $source): array
+    {
+        $attributes = [];
+    
+        if ($source === '*') {
+            $attributes[] = 'type';
+        }
+    
+        $attributes[] = 'postDate';
+        $attributes[] = 'expiryDate';
+        $attributes[] = 'link';
+    
+        return $attributes;
+    }
+    
+    protected static function defineSearchableAttributes(): array
+    {
+        return ['title'];
+    }
+    
+    protected static function defineSortOptions(): array
+    {
+        return [
+            'title' => Craft::t('commerce-bundles', 'Title'),
+            'postDate' => Craft::t('commerce-bundles', 'Post Date'),
+            'expiryDate' => Craft::t('commerce-bundles', 'Expiry Date'),
+            'price' => Craft::t('commerce-bundles', 'Price'),
+        ];
+    }
+    
+    // Public Properties
+    // =========================================================================
+    
+    public ?int $id = null;
+    public ?int $typeId = null;
+    public ?int $taxCategoryId = null;
+    public ?int $shippingCategoryId = null;
+    public ?DateTime $postDate = null;
+    public ?DateTime $expiryDate = null;
+    public ?string $sku = null;
+    public ?float $price = null;
+    
+    private ?BundleTypeModel $_bundleType = null;
+    private ?array $_purchasables = null;
+    private ?array $_purchasableIds = null;
+    private ?array $_qtys = null;
+    
+    
+    
+    // Public Methods
+    // =========================================================================
+    
+    public function __toString(): string
+    {
+        return (string)$this->title;
+    }
+    
+    public function getName(): string
+    {
+        return $this->title;
+    }
+    
+    public function canView(User $user): bool
+    {
+        if (parent::canView($user)) {
+            return true;
+        }
+    
+        try {
+            $bundleType = $this->getType();
+        } catch (\Exception) {
+            return false;
+        }
+    
+        return $user->can('commerce-bundles-manageBundleType:' . $bundleType->uid);
+    }
+    
+    public function canSave(User $user): bool
+    {
+        if (parent::canSave($user)) {
+            return true;
+        }
+    
+        try {
+            $bundleType = $this->getType();
+        } catch (\Exception) {
+            return false;
+        }
+    
+        return $user->can('commerce-bundles-manageBundleType:' . $bundleType->uid);
+    }
+    
+    public function canDuplicate(User $user): bool
+    {
+        if (parent::canDuplicate($user)) {
+            return true;
+        }
+    
+        try {
+            $bundleType = $this->getType();
+        } catch (\Exception) {
+            return false;
+        }
+    
+        return $user->can('commerce-bundles-manageBundleType:' . $bundleType->uid);
+    }
+    
+    public function canDelete(User $user): bool
+    {
+        if (parent::canDelete($user)) {
+            return true;
+        }
+    
+        try {
+            $bundleType = $this->getType();
+        } catch (\Exception) {
+            return false;
+        }
+    
+        return $user->can('commerce-bundles-manageBundleType:' . $bundleType->uid);
+    }
+    
+    public function canDeleteForSite(User $user): bool
+    {
+        return $this->canDelete($user);
+    }
+    
+    public function createAnother(): ?ElementInterface
+    {
+        return null;
+    }
 
     public function getStatuses(): array
     {
@@ -229,7 +348,7 @@ class Bundle extends Purchasable
         return $this->getStatus() === static::STATUS_LIVE;
     }
 
-    public function getStatus(): string|null
+    public function getStatus(): ?string
     {
         $status = parent::getStatus();
 
@@ -263,10 +382,6 @@ class Bundle extends Purchasable
         return $rules;
     }
 
-    public static function find(): ElementQueryInterface
-    {
-        return new BundleQuery(static::class);
-    }
 
     public function getIsEditable(): bool
     {
@@ -279,18 +394,18 @@ class Bundle extends Purchasable
         return false;
     }
 
-    public function getCpEditUrl(): string|null
+    public function getCpEditUrl(): ?string
     {
         $bundleType = $this->getType();
 
         if ($bundleType) {
             return UrlHelper::cpUrl('commerce-bundles/bundles/' . $bundleType->handle . '/' . $this->id);
         }
-
+        
         return null;
     }
 
-    public function getProduct(): Bundle
+    public function getProduct(): static
     {
         return $this;
     }
@@ -322,7 +437,7 @@ class Bundle extends Purchasable
         return $this->typeId ? $this->_bundleType = Bundles::$plugin->bundleTypes->getBundleTypeById($this->typeId) : null;
     }
 
-    public function getTaxCategory(): TaxCategory|null
+    public function getTaxCategory(): ?TaxCategory
     {
         if ($this->taxCategoryId) {
             return Commerce::getInstance()->getTaxCategories()->getTaxCategoryById($this->taxCategoryId);
@@ -331,7 +446,7 @@ class Bundle extends Purchasable
         return null;
     }
 
-    public function getShippingCategory(): ShippingCategory|null
+    public function getShippingCategory(): ?ShippingCategory
     {
         if ($this->shippingCategoryId) {
             return Commerce::getInstance()->getShippingCategories()->getShippingCategoryById($this->shippingCategoryId);
@@ -450,13 +565,6 @@ class Bundle extends Purchasable
     {
         $description = "Bundle: $this->title";
     
-        /*if ($format = $this->getProduct()->getType()->descriptionFormat) {
-            if ($rendered = Craft::$app->getView()->renderObjectTemplate($format, $this)) {
-                $description = $rendered;
-            }
-        }*/
-    
-        // If title is not set yet default to blank string
         return (string)$description;
     }
 
@@ -591,11 +699,6 @@ class Bundle extends Purchasable
         }
     }
 
-    /**
-     * Updates Stock count from completed order.
-     *
-     * @inheritdoc
-     */
     public function afterOrderComplete(Order $order, LineItem $lineItem): void
     {
         $qtys = $this->getQtys();
@@ -645,48 +748,17 @@ class Bundle extends Purchasable
                 'template' => $bundleTypeSiteSettings[$siteId]->template,
                 'variables' => [
                     'bundle' => $this,
+                    'product' => $this,
                 ]
             ]
         ];
     }
 
-    protected static function defineTableAttributes(): array
-    {
-        return [
-            'title' => ['label' => Craft::t('commerce-bundles', 'Title')],
-            'type' => ['label' => Craft::t('commerce-bundles', 'Type')],
-            'slug' => ['label' => Craft::t('commerce-bundles', 'Slug')],
-            'sku' => ['label' => Craft::t('commerce-bundles', 'SKU')],
-            'price' => ['label' => Craft::t('commerce-bundles', 'Price')],
-            'link' => ['label' => Craft::t('commerce', 'Link'), 'icon' => 'world'],
-            'postDate' => ['label' => Craft::t('commerce-bundles', 'Post Date')],
-            'expiryDate' => ['label' => Craft::t('commerce-bundles', 'Expiry Date')],
-        ];
-    }
-
-    protected static function defineDefaultTableAttributes(string $source): array
-    {
-        $attributes = [];
-
-        if ($source === '*') {
-            $attributes[] = 'type';
-        }
-
-        $attributes[] = 'postDate';
-        $attributes[] = 'expiryDate';
-        $attributes[] = 'link';
-
-        return $attributes;
-    }
-
-    protected static function defineSearchableAttributes(): array
-    {
-        return ['title'];
-    }
+    
 
     protected function tableAttributeHtml(string $attribute): string
     {
-        /* @var $bundleType bundleType */
+
         $bundleType = $this->getType();
 
         switch ($attribute) {
@@ -716,15 +788,6 @@ class Bundle extends Purchasable
         }
     }
 
-    protected static function defineSortOptions(): array
-    {
-        return [
-            'title' => Craft::t('commerce-bundles', 'Title'),
-            'postDate' => Craft::t('commerce-bundles', 'Post Date'),
-            'expiryDate' => Craft::t('commerce-bundles', 'Expiry Date'),
-            'price' => Craft::t('commerce-bundles', 'Price'),
-        ];
-    }
 
     private function _getBundlePurchasables(): array
     {
@@ -733,4 +796,5 @@ class Bundle extends Purchasable
             ->all();
     }
 
+    
 }

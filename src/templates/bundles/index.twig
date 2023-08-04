@@ -10,16 +10,22 @@
         Craft.Bundles = {};
     }
 
-    Craft.Bundles.editableBundleTypes = [
-        {% for bundleType in craft.commerceBundles.bundleTypes.getEditableBundleTypes() %}
-            {id: "{{ bundleType.id }}", name: "{{ bundleType.name|t('commerce')|e('js') }}", handle: "{{ bundleType.handle|e('js') }}"}{% if not loop.last %},{% endif %}
-        {% endfor %}
-    ];
+    {% set bundleTypes = [] %}
+    
+    {% for bundleType in craft.commerceBundles.bundleTypes.getEditableBundleTypes() %}
+        {% set bundleTypes = bundleTypes|merge([{
+            id: bundleType.id,
+            name: bundleType.name,
+            handle: bundleType.handle,
+        }]) %}
+    {% endfor %}
+    
+    Craft.Bundles.editableBundleTypes = {{ bundleTypes|json_encode|raw }};
 
     {% if bundleTypeHandle is defined %}
         window.defaultBundleTypeHandle = '{{ bundleTypeHandle }}';
     {% endif %}
 {% endjs %}
 
-{% do view.registerAssetBundle("webdna\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}
+{% do view.registerAssetBundle("webdna\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") -%}
 

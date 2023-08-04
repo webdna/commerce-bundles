@@ -12,6 +12,7 @@ namespace webdna\commerce\bundles\records;
 
 use webdna\commerce\bundles\Bundles;
 
+use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\records\Element;
 

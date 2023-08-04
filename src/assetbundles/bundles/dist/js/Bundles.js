@@ -15,6 +15,8 @@
 	if (typeof Craft.Bundles === 'undefined') {
 		Craft.Bundles = {};
 	}
+	
+	var elementTypeClass = 'webdna\\commerce\\bundles\\elements\\Bundle';
 
 	Craft.Bundles.BundleIndex = Craft.BaseElementIndex.extend(
 	{
@@ -46,7 +48,10 @@
 
 		getDefaultSourceKey: function() {
 			// Did they request a specific bundleType in the URL?
-			if (this.settings.context === 'index' && typeof defaultBundleTypeHandle !== 'undefined') {
+			if (
+				this.settings.context === 'index' && 
+				typeof defaultBundleTypeHandle !== 'undefined'
+			) {
 				for (var i = 0; i < this.$sources.length; i++) {
 					var $source = $(this.$sources[i]);
 
@@ -98,8 +103,7 @@
 				// If they are, show a primary "New Bundle" button, and a dropdown of the other bundleTypes (if any).
 				// Otherwise only show a menu button
 				if (selectedbundleType) {
-					console.log('here 2');
-					href = this._getbundleTypeTriggerHref(selectedbundleType);
+					href = this._getBundleTypeTriggerHref(selectedbundleType);
 					label = (this.settings.context === 'index' ? Craft.t('app', 'New Bundle') : Craft.t('app', 'New {bundleType} Bundle', {bundleType: selectedbundleType.name}));
 					this.$newBundleBtn = $('<a class="btn submit add icon" ' + href + '>' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newBundleBtnBundleType);
 
@@ -114,8 +118,6 @@
 					}
 				}
 				else {
-
-					console.log('here 3');
 					this.$newBundleBtn = $menuBtn = $('<div class="btn submit add icon menubtn">' + Craft.t('app', 'New Bundle') + '</div>').appendTo(this.$newBundleBtnBundleType);
 				}
 
@@ -126,7 +128,7 @@
 						var bundleType = this.editableBundleTypes[i];
 
 						if (this.settings.context === 'index' || bundleType !== selectedbundleType) {
-							href = this._getbundleTypeTriggerHref(bundleType);
+							href = this._getBundleTypeTriggerHref(bundleType);
 							label = (this.settings.context === 'index' ? bundleType.name : Craft.t('app', 'New {bundleType} Bundle', {bundleType: bundleType.name}));
 							menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
 						}
@@ -161,9 +163,10 @@
 			}
 		},
 
-		_getbundleTypeTriggerHref: function(bundleType) {
+		_getBundleTypeTriggerHref: function(bundleType) {
 			if (this.settings.context === 'index') {
 				var uri = 'commerce-bundles/bundles/' + bundleType.handle + '/new';
+				
 				if (this.siteId && this.siteId != Craft.primarySiteId) {
 					for (var i = 0; i < Craft.sites.length; i++) {
 						if (Craft.sites[i].id == this.siteId) {
@@ -172,8 +175,7 @@
 					}
 				}
 				return 'href="' + Craft.getUrl(uri) + '"';
-			}
-			else {
+			} else {
 				return 'data-id="' + bundleType.id + '"';
 			}
 		},
@@ -203,7 +205,7 @@
 
 			Craft.createElementEditor(this.elementType, {
 				hudTrigger: this.$newBundleBtnBundleType,
-				elementType: 'webdna\\commerce\\bundles\\elements\\Bundle',
+				elementType: elementTypeClass,
 				siteId: this.siteId,
 				attributes: {
 					bundleTypeId: bundleTypeId
@@ -233,6 +235,6 @@
 	});
 
 	// Register it!
-	Craft.registerElementIndexClass('webdna\\commerce\\bundles\\elements\\Bundle', Craft.Bundles.BundleIndex);
+	Craft.registerElementIndexClass(elementTypeClass, Craft.Bundles.BundleIndex);
 
 	})(jQuery);

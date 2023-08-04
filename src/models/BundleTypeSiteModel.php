@@ -20,6 +20,7 @@ class BundleTypeSiteModel extends Model
     public ?bool $hasUrls = null;
     public string $uriFormat = '';
     public string $template = '';
+    public string $uid = '';
     public bool $uriFormatIsRequired = true;
 
     private ?BundleTypeModel $_bundleType = null;

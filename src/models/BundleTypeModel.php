@@ -24,6 +24,7 @@ class BundleTypeModel extends Model
     public string $handle = '';
     public string $skuFormat = '';
     public string $template = '';
+    public string $uid = '';
     public ?int $fieldLayoutId = null;
 
     private ?array $_siteSettings = null;
