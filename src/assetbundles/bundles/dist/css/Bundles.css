@@ -12,35 +12,47 @@
 
 
  #productPicker .label {
-	width: 200px;
-	margin: 0;
+    width: 200px;
+    margin: 0;
  }
 
  #productPicker .qty {
-	 margin: 0;
-	 margin-right: 20px !important;
-	 margin-left: 10px;
-	 width: 100px;
+     margin: 0;
+     margin-right: 20px !important;
+     margin-left: 10px;
+     width: 100px;
  }
 
 .bundleProducts .elementselect {
-	width: 100%;
+    width: 100%;
+    margin-top: 7px;
 }
 
 .bundleProducts .elementselect .element {
-	width: 100%;
+    width: 100%;
+    margin-top: 0 !important;
+}
+.bundleProducts .elementselect .element.sel {
+    /* background-color: transparent !important; */
+}
+
+.bundleProducts .elementselect .element .flex {
+    padding-top: 0;
+}
+.bundleProducts .elementselect .element .flex .flex-1 {
+    flex: 1 1 0%;
 }
 
 .bundleProducts .elementselect .element .flex > * {
-	margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .bundleProducts .elementselect .element .label:not(.qty) {
-	margin-right: auto !important;
+    margin-right: auto !important;
 }
 
 .bundleProducts .elementselect .element .qty {
-	padding-right: 10px !important;
+    padding-right: 10px !important;
 }
 
 .bundleProducts input[type=number]{

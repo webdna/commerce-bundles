@@ -5,7 +5,7 @@
 {% set crumbs = [ { label: 'Bundles' | t('commerce-bundles'), url: url('commerce-bundles') }, { label: bundleType.name | t('commerce-bundles'), url: url('commerce-bundles/bundles/' ~ bundleType.handle) }, ] %}
 {% set fullPageForm = true %}
 {% set saveShortcutRedirect = continueEditingUrl %}
-{% set products = craft.products.id(410,413) %}
+
 {% import '_includes/forms' as forms %}
 {% import 'commerce-bundles/bundles/_fields' as bundleFields %}
 
@@ -100,9 +100,21 @@
 			<div class="flex">
 				<div id="{{id}}-Picker" class="elementselect">
 					<div class="elements">
-						{% for element in purchasables[purchasableType.elementType] ?? [] %} {% include "_elements/element" with { context: 'field', size: 'small', name: 'purchasables['~purchasableType.elementType~']' } %} {% endfor %}
+						{% for element in purchasables[purchasableType.elementType] ?? [] %} 
+							{# {% include "_elements/element" with { context: 'field', size: 'small', name: 'purchasables['~purchasableType.elementType~']' } %}  #}
+							{% set element = include('_elements/element', {
+								context: 'field',
+								size: 'small',
+								name: 'purchasables['~purchasableType.elementType~']'
+							}) %}
+							{{ element|raw }}
+						{% endfor %}
 					</div>
-					<div class="btn add icon dashed">Choose {{purchasableType.name}}</div>
+					
+					<div class="flex flex-nowrap">
+						<button type="button" class="btn add icon dashed">Choose {{purchasableType.name}}</button>
+						<div class="spinner hidden"></div>
+					</div>
 				</div>
 			</div>
 			{% if bundle.getErrors('purchasables-'~purchasableType.elementType|replace('\\','-')) %}
@@ -128,19 +140,19 @@
 	{{ bundleFields.generalMetaFields(bundle) }}
 
 	{{ forms.lightswitchField({
-            label: 'Enabled' | t('commerce-bundles'),
-            id: 'enabled',
-            name: 'enabled',
-            on: bundle.enabled
-        }) }}
+			label: 'Enabled' | t('commerce-bundles'),
+			id: 'enabled',
+			name: 'enabled',
+			on: bundle.enabled
+		}) }}
 
 	{% if craft.app.getIsMultiSite() %}
 	{{ forms.lightswitchField({
-                label: 'Enabled for site' | t('commerce-bundles'),
-                id: 'enabledForSite',
-                name: 'enabledForSite',
-                on: bundle.enabledForSite
-            }) }}
+				label: 'Enabled for site' | t('commerce-bundles'),
+				id: 'enabledForSite',
+				name: 'enabledForSite',
+				on: bundle.enabledForSite
+			}) }}
 	{% endif %}
 </div>
 
@@ -195,7 +207,7 @@ var qty = [];
 			id = $this.data('id');
 		var $div = $('<div class="flex"></div>').appendTo($this);
 			$div.append($this.find('.status'));
-			$div.append($this.find('.label'));
+			$div.append($this.find('.label').addClass('flex-1'));
 			$div.append('<div class="label">Qty: <input type="number" min="1" class="text qty" data-id="'+id+'" name="qty['+id+']" value="'+qty['{{id}}'][id]+'" /></div>');
 			$div.append($this.find('.icon'));
 	})
@@ -203,24 +215,30 @@ var qty = [];
 		id: '{{id}}-Picker',
 		name: 'purchasables[{{type}}]',
 		elementType: '{{type}}',
-		sources: null,
+		sources: '*',
+		condition: null,
 		criteria: null,
+		allowSelfRelations: false,
 		sourceElementId: null,
+		disabledElementIds: null,
 		viewMode: 'list',
+		single: false,
 		limit: null,
-		editable: false,
-		sortable: false,
-		selectable: false,
+		showSiteMenu: false,
 		modalStorageKey: null,
-		fieldId: null,
+		fieldId: '1',
+		removable: true,
+		sortable: false,
+		selectable: true,
+		prevalidate: false,
+		modalSettings: {},
 		onSelectElements: function(e) {
 			$.each(e, function(i) {
-				console.log(this);
 				var $el = $('#{{id}}-Picker .element[data-id="'+this.id+'"]');
 				var $div = $('<div class="flex"></div>').appendTo($el);
 				$div.append($el.find('.status'));
-				$div.append($el.find('.label'));
-				$div.append('<div class="label qty">Qty: <input type="number" min="1" class="text qty" data-id="'+this.id+'" name="qty['+this.id+']" value="1" /></div>');
+				$div.append($el.find('.label').addClass('flex-1'));
+				$div.append('<div class="label">Qty: <input type="number" min="1" class="text qty" data-id="'+this.id+'" name="qty['+this.id+']" value="1" /></div>');
 				$div.append($el.find('.icon'));
 			});
 		},
@@ -228,7 +246,5 @@ var qty = [];
 {% endfor %}
 {% endjs %}
 {% do view.registerAssetBundle("webdna\\commerce\\bundles\\assetbundles\\bundles\\BundlesAsset") %}
-
-
 
 

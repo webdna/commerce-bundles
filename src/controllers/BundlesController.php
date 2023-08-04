@@ -138,7 +138,7 @@ class BundlesController extends Controller
         return $this->redirectToPostedUrl($bundle);
     }
 
-    public function actionSave(): Response
+    public function actionSave(): ?Response
     {
         $this->requirePostRequest();
 
